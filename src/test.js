@@ -40,6 +40,16 @@ const graph = {
         { source: 5, target: 2},
     ]
   };
+
+function addNode(x, y) {
+    const newNode = {
+        index: graph.nodes.length,
+        x: x,
+        y: y
+    };
+
+    graph.nodes.push(newNode)
+}
   
 const width = 1000;
 const height = Math.min(500, width * 0.6);
@@ -153,6 +163,45 @@ function deleteAllNodesAndEdges() {
     // Remove all visual elements from the SVG
     svg.selectAll("*").remove();
 }
+
+function redrawGraph() {
+    // Update node selection
+    const updatedNodes = svg.selectAll(".node")
+        .data(graph.nodes);
+
+    // Enter selection for new nodes
+    const newNodeGroups = updatedNodes.enter()
+        .append("g")
+        .classed("node", true)
+        .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    // Append circle and text to new nodes
+    newNodeGroups.append("circle")
+        .attr("r", 15);
+
+    newNodeGroups.append("text")
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .text(d => d.index);
+
+    // Merge new nodes with existing nodes
+    const mergedNodes = newNodeGroups.merge(updatedNodes);
+
+    // Update existing nodes
+    mergedNodes.attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    // Update edge positions
+    updateEdgePositions();
+}
+
+document.getElementById("add-node").addEventListener("click", () => {
+    svg.on("click", function(event) {
+        const [x, y] = d3.pointer(event, this); // Get the mouse coordinates relative to the SVG
+        addNode(x, y); // Call the addNode function with the coordinates
+        console.log(graph);
+        redrawGraph(); // Redraw the graph to reflect the changes
+    });
+});
 
 document.getElementById("drag-tool").addEventListener("click", () => {
     draggingEnabled = !draggingEnabled;
