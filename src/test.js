@@ -145,6 +145,15 @@ function dragended(event, d) {
     console.log("Nodes after dragging:", graph.nodes);
 }
 
+function deleteAllNodesAndEdges() {
+    // Clear nodes and edges arrays
+    graph.nodes = [];
+    graph.edges = [];
+
+    // Remove all visual elements from the SVG
+    svg.selectAll("*").remove();
+}
+
 document.getElementById("drag-tool").addEventListener("click", () => {
     draggingEnabled = !draggingEnabled;
     const dragToolButton = document.getElementById("drag-tool");
@@ -157,9 +166,11 @@ document.getElementById("drag-tool").addEventListener("click", () => {
     }
 });
 
+document.getElementById("delete-graph").addEventListener("click", () => {
+    deleteAllNodesAndEdges();
+});
+
 // Initially draws the edges
 updateEdgePositions()
-
-console.log(getContainerBounds())
 
 document.getElementById("graph-container").appendChild(svg.node());
