@@ -20,12 +20,18 @@
             float: left;
         }
         #toolbar {
-            display: inline-block;
-            vertical-align: top;
+            display: flex; /* Use flexbox layout */
+            flex-direction: column; /* Stack items vertically */
+            align-items: flex-start; /* Align items to the start of the container */
             margin-left: 20px;
             width: 20%; /* Set the width of the toolbar */
             margin-top: 10px; /* Adjust margin top to create space */
             padding-left: 10px; /* Add padding for better appearance */
+        }
+        #toolbar button {
+            width: 30%; /* Set fixed width for buttons */
+            text-align: center; /* Center the text */
+            margin-bottom: 10px; /* Add margin bottom to create space between buttons */
         }
         #drag-tool.active {
             background-color: #4CAF50; /* Green */
@@ -38,6 +44,7 @@
     <div id="graph-container"></div>
     <div id="toolbar">
         <button id="drag-tool">Drag</button>
+        <button id="delete-graph">Delete Graph</button>
         <!-- Add other tools here -->
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>
