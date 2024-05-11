@@ -12,7 +12,7 @@
             stroke-width: 1.5px;
         }
         .dragging .node {
-            cursor: grab;
+            cursor: move;
         }
         #graph-container {
             border: 2px solid black;
@@ -34,6 +34,10 @@
             margin-bottom: 10px; /* Add margin bottom to create space between buttons */
         }
         #drag-tool.active {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        #add-node.active {
             background-color: #4CAF50; /* Green */
             color: white;
         }
