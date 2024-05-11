@@ -40,6 +40,16 @@ const graph = {
         { source: 5, target: 2},
     ]
   };
+
+function addNode(x, y) {
+    const newNode = {
+        index: graph.nodes.length,
+        x: x,
+        y: y
+    };
+
+    graph.nodes.push(newNode)
+}
   
 const width = 1000;
 const height = Math.min(500, width * 0.6);
@@ -72,6 +82,7 @@ node.append("text")
     .text(d => d.index);
 
 let draggingEnabled = false;
+let addingNodesEnabled = false;
 
 const drag = d3.drag()
     .on("start", dragstarted)
@@ -142,7 +153,9 @@ function dragged(event, d) {
 }
 
 function dragended(event, d) {
-    console.log("Nodes after dragging:", graph.nodes);
+    if (draggingEnabled){
+        console.log("Nodes after dragging:", graph.nodes);
+    }
 }
 
 function deleteAllNodesAndEdges() {
@@ -154,15 +167,94 @@ function deleteAllNodesAndEdges() {
     svg.selectAll("*").remove();
 }
 
+function redrawGraph() {
+    // Update node selection
+    const updatedNodes = svg.selectAll(".node")
+        .data(graph.nodes, d => d.index);
+
+    // Enter selection for new nodes
+    const newNodeGroups = updatedNodes.enter()
+        .append("g")
+        .classed("node", true)
+        .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    // Append circle and text to new nodes
+    newNodeGroups.append("circle")
+        .attr("r", 15);
+
+    newNodeGroups.append("text")
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .text(d => d.index);
+
+    // Merge new nodes with existing nodes
+    const mergedNodes = newNodeGroups.merge(updatedNodes);
+
+    // Update existing nodes
+    mergedNodes.attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    // Apply drag behavior to all nodes
+    mergedNodes.call(drag);
+
+    // Update edge positions
+    updateEdgePositions();
+}
+
+// Function to deactivate all buttons except the specified button
+function deactivateAllButtonsExcept(buttonId) {
+    const buttons = document.querySelectorAll("#toolbar button");
+    buttons.forEach(button => {
+        if (button.id !== buttonId) {
+            button.disabled = true;
+        }
+    });
+}
+
+// Function to enable all buttons
+function enableAllButtons() {
+    const buttons = document.querySelectorAll("#toolbar button");
+    buttons.forEach(button => {
+        button.disabled = false;
+    });
+}
+
+document.getElementById("add-node").addEventListener("click", () => {
+    addingNodesEnabled = !addingNodesEnabled; // Toggle the flag
+
+    const addButton = document.getElementById("add-node");
+    if (addingNodesEnabled) {
+        deactivateAllButtonsExcept("add-node");
+        addButton.classList.add("active"); // Change button appearance
+        // Enable adding nodes functionality
+        svg.style('cursor', 'crosshair'); // Change cursor to crosshair
+        svg.on("click", function(event) {
+            if (addingNodesEnabled) { // Check if adding nodes is enabled
+                const [x, y] = d3.pointer(event, this); // Get the mouse coordinates relative to the SVG
+                addNode(x, y); // Call the addNode function with the coordinates
+                redrawGraph(); // Redraw the graph to reflect the changes
+            }
+        });
+    } else {
+        enableAllButtons();
+        addButton.classList.remove("active"); // Change button appearance
+        svg.style('cursor', 'auto'); // Change cursor to crosshair
+        svg.on("click", null); // Disable adding nodes functionality
+    }
+});
+
 document.getElementById("drag-tool").addEventListener("click", () => {
     draggingEnabled = !draggingEnabled;
     const dragToolButton = document.getElementById("drag-tool");
     if (draggingEnabled) {
+        deactivateAllButtonsExcept("drag-tool");
         dragToolButton.classList.add("active");
-        node.style('cursor', 'move');
+        //node.style('cursor', 'move');
+        svg.classed('dragging', true); // Apply class to SVG container
     } else {
+        enableAllButtons();
         dragToolButton.classList.remove("active");
-        node.style('cursor', 'pointer')
+        //node.style('cursor', 'pointer')
+        svg.classed('dragging', false); // Remove class from SVG container
     }
 });
 
