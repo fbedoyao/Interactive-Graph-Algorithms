@@ -71,6 +71,8 @@ node.append("text")
     .attr("alignment-baseline", "middle")
     .text(d => d.index);
 
+let draggingEnabled = false;
+
 const drag = d3.drag()
     .on("start", dragstarted)
     .on("drag", dragged)
@@ -108,36 +110,52 @@ function getContainerBounds() {
   }
 
 function dragstarted(event, d) {
-    d3.select(this).raise();
+    if (draggingEnabled) {
+        d3.select(this).raise();
+    }
 }
 
 function dragged(event, d) {
-    // Get container boundaries
-    const containerBounds = getContainerBounds();
-  
-    // Calculate new position of the dragged node
-    const newX = d.x + event.dx;
-    const newY = d.y + event.dy;
-  
-    // Check if the new position is within the container boundaries
-    const constrainedX = Math.max(containerBounds.minX, Math.min(containerBounds.maxX, newX));
-    const constrainedY = Math.max(containerBounds.minY, Math.min(containerBounds.maxY, newY));
-  
-    // Update the visual position of the node only if it stays within the boundaries
-    d3.select(this)
-      .attr("transform", `translate(${constrainedX}, ${constrainedY})`);
-  
-    // Update the position of the dragged node in the graph data structure
-    d.x = constrainedX;
-    d.y = constrainedY;
-  
-    // Update the positions of the connected edges
-    updateEdgePositions();
+    if (draggingEnabled){
+        // Get container boundaries
+        const containerBounds = getContainerBounds();
+    
+        // Calculate new position of the dragged node
+        const newX = d.x + event.dx;
+        const newY = d.y + event.dy;
+    
+        // Check if the new position is within the container boundaries
+        const constrainedX = Math.max(containerBounds.minX, Math.min(containerBounds.maxX, newX));
+        const constrainedY = Math.max(containerBounds.minY, Math.min(containerBounds.maxY, newY));
+    
+        // Update the visual position of the node only if it stays within the boundaries
+        d3.select(this)
+        .attr("transform", `translate(${constrainedX}, ${constrainedY})`);
+    
+        // Update the position of the dragged node in the graph data structure
+        d.x = constrainedX;
+        d.y = constrainedY;
+    
+        // Update the positions of the connected edges
+        updateEdgePositions();
+    }
 }
 
 function dragended(event, d) {
     console.log("Nodes after dragging:", graph.nodes);
 }
+
+document.getElementById("drag-tool").addEventListener("click", () => {
+    draggingEnabled = !draggingEnabled;
+    const dragToolButton = document.getElementById("drag-tool");
+    if (draggingEnabled) {
+        dragToolButton.classList.add("active");
+        node.style('cursor', 'move');
+    } else {
+        dragToolButton.classList.remove("active");
+        node.style('cursor', 'pointer')
+    }
+});
 
 // Initially draws the edges
 updateEdgePositions()

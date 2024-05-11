@@ -6,20 +6,40 @@
     <title>Interactive Graph Algorithms</title>
     <style>
         .node {
-            cursor: move;
+            cursor: pointer;
             fill: #ccc;
             stroke: #000;
             stroke-width: 1.5px;
         }
+        .dragging .node {
+            cursor: grab;
+        }
         #graph-container {
             border: 2px solid black;
             width: 70%;
+            float: left;
+        }
+        #toolbar {
+            display: inline-block;
+            vertical-align: top;
+            margin-left: 20px;
+            width: 20%; /* Set the width of the toolbar */
+            margin-top: 10px; /* Adjust margin top to create space */
+            padding-left: 10px; /* Add padding for better appearance */
+        }
+        #drag-tool.active {
+            background-color: #4CAF50; /* Green */
+            color: white;
         }
     </style>
 </head>
 <body>
     <h1>Interactive Graph Algorithms</h1>
     <div id="graph-container"></div>
+    <div id="toolbar">
+        <button id="drag-tool">Drag</button>
+        <!-- Add other tools here -->
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>
     <script src="src/test.js"></script>
 </body>
