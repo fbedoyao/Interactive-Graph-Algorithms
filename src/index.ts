@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge } from "./graph";
+import { deactivateAllButtonsExcept, enableAllButtons } from './utils';
 
 // Create a new graph instance
 const graph = new Graph();
@@ -176,24 +177,6 @@ function redrawGraph() {
 
     // Update edge positions
     updateEdgePositions();
-}
-
-// Function to deactivate all buttons except the specified button
-function deactivateAllButtonsExcept(buttonId: string) {
-    const buttons = document.querySelectorAll<HTMLButtonElement>("#toolbar button"); // Narrow down the type to HTMLButtonElement
-    buttons.forEach(button => {
-        if (button.id !== buttonId) {
-            button.disabled = true;
-        }
-    });
-}
-
-// Function to enable all buttons
-function enableAllButtons() {
-    const buttons = document.querySelectorAll<HTMLButtonElement>("#toolbar button"); // Narrow down the type to HTMLButtonElement
-    buttons.forEach(button => {
-        button.disabled = false;
-    });
 }
 
 document.getElementById("add-node").addEventListener("click", () => {
