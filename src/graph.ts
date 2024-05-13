@@ -1,22 +1,32 @@
+export interface Node {
+  index: number;
+  x: number;
+  y: number;
+}
+
+export interface Edge {
+  source: number;
+  target: number;
+}
+
 export class Graph {
-    private adjacencyList: Map<string, string[]>;
+  nodes: Node[];
+  edges: Edge[];
 
-    constructor() {
-        this.adjacencyList = new Map();
-    }
+  constructor() {
+      this.nodes = [];
+      this.edges = [];
+  }
 
-    addNode(node: string) {
-        if (!this.adjacencyList.has(node)) {
-            this.adjacencyList.set(node, []);
-        }
-    }
+  addNode(x: number, y: number): void {
+      const newNode = { index: this.nodes.length, x, y };
+      this.nodes.push(newNode);
+  }
 
-    addEdge(node1: string, node2: string) {
-        this.adjacencyList.get(node1)?.push(node2);
-        this.adjacencyList.get(node2)?.push(node1);
-    }
+  addEdge(source: number, target: number): void {
+      const newEdge = { source, target };
+      this.edges.push(newEdge);
+  }
 
-    getAdjacencyList() {
-        return this.adjacencyList;
-    }
+  // Other graph manipulation methods
 }

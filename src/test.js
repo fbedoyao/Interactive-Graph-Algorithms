@@ -41,6 +41,8 @@ const graph = {
     ]
   };
 
+
+
 function addNode(x, y) {
     const newNode = {
         index: graph.nodes.length,
@@ -50,6 +52,7 @@ function addNode(x, y) {
 
     graph.nodes.push(newNode)
 }
+
   
 const width = 1000;
 const height = Math.min(500, width * 0.6);
@@ -91,12 +94,16 @@ const drag = d3.drag()
 
 node.call(drag);
 
+
+
 function updateEdgePositions() {
-    edges
+    if (graph.edges.length > 0){
+        edges
         .attr("x1", d => graph.nodes[d.source].x)
         .attr("y1", d => graph.nodes[d.source].y)
         .attr("x2", d => graph.nodes[d.target].x)
         .attr("y2", d => graph.nodes[d.target].y);
+    }
 }
 
 function getContainerBounds() {
@@ -255,6 +262,38 @@ document.getElementById("drag-tool").addEventListener("click", () => {
         dragToolButton.classList.remove("active");
         //node.style('cursor', 'pointer')
         svg.classed('dragging', false); // Remove class from SVG container
+    }
+});
+
+// Event listener to display dropdown menu when clicking on a node
+node.on("click", function(event, d) {
+    if (!draggingEnabled && !addingNodesEnabled) {
+        console.log("Click on node " + d.index);
+        const dropdown = document.getElementById("node-dropdown");
+        dropdown.style.display = "block";
+        dropdown.style.left = (d.x + 5) + "px"; // Adjust position as needed
+        dropdown.style.top = (d.y + 5) + "px"; // Adjust position as needed
+
+        // Remove previous event listeners to avoid duplicate listeners
+        document.getElementById("add-edge").removeEventListener("click", addEdgeListener);
+        document.getElementById("delete-node").removeEventListener("click", deleteNodeListener);
+        
+
+        // Handle dropdown options
+
+        // Add event listener for adding edge specific to the clicked node
+        function addEdgeListener() {
+            // Logic to add edge
+            console.log("Adding edge from node " + d.index);
+        }
+        document.getElementById("add-edge").addEventListener("click", addEdgeListener);
+
+        // Add event listener for deleting node specific to the clicked node
+        function deleteNodeListener() {
+            // Logic to delete node
+            console.log("Deleting node " + d.index);
+        }
+        document.getElementById("delete-node").addEventListener("click", deleteNodeListener);
     }
 });
 
