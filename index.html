@@ -5,27 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Graph Algorithms</title>
     <style>
-        .dropdown {
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 120px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            padding: 5px 0;
-            z-index: 1;
-            display: none; /* Initially hide dropdown */
-        }
-        .dropdown button {
-            background-color: transparent;
-            border: none;
-            color: #333;
-            padding: 8px 12px;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-        }
-        .dropdown button:hover {
-            background-color: #ddd;
-        }
         .node {
             cursor: pointer;
             fill: #ccc;
@@ -66,12 +45,7 @@
 </head>
 <body>
     <h1>Interactive Graph Algorithms</h1>
-    <div id="graph-container" style="position: relative;">
-        <div class="dropdown" id="node-dropdown">
-            <button id="add-edge">Add Edge</button>
-            <button id="delete-node">Delete Node</button>
-        </div>
-    </div>
+    <div id="graph-container" style="position: relative;"></div>
     <div id="toolbar">
         <button id="drag-tool">Drag</button>
         <button id="delete-graph">Delete Graph</button>
