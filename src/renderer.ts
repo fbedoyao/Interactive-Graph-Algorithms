@@ -41,6 +41,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
     let draggingEnabled = false;
     let addingNodesEnabled = false;
+    let deletingEdgesEnabled = false;
 
     function getContainerBounds() {        
         return {
@@ -139,7 +140,31 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
         // Add event listeners
         addEventListenerToSelection(mergedNodes, "click", printNodeIndex)
-    
+
+        // Update edge selection
+        const updatedEdges = svg.selectAll<SVGLineElement, Edge>(".edge")
+            .data(graph.edges);
+
+        // Enter selection for new edges
+        const newEdgeLines = updatedEdges.enter()
+            .append("line")
+            .classed("edge", true)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2);
+
+        // Merge new edges with existing edges
+        const mergedEdges = newEdgeLines.merge(updatedEdges);
+
+        // Update positions of existing edges
+        mergedEdges
+            .attr("x1", d => graph.nodes[d.source].x)
+            .attr("y1", d => graph.nodes[d.source].y)
+            .attr("x2", d => graph.nodes[d.target].x)
+            .attr("y2", d => graph.nodes[d.target].y);
+
+        // Remove any edges that are no longer in the data
+        updatedEdges.exit().remove();
+
         // Update edge positions
         updateEdgePositions();
     }
@@ -184,10 +209,35 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         }
     });
 
+    document.getElementById("delete-edge").addEventListener("click", () => {
+        deletingEdgesEnabled = !deletingEdgesEnabled;
+        const deleteEdgesButton = document.getElementById("delete-edge");
+        if (deletingEdgesEnabled) {
+            deactivateAllButtonsExcept("delete-edge");
+            deleteEdgesButton.classList.add("active");
+            edge.classed("deletion-active", true);
+            redrawGraph();
+        } else{
+            enableAllButtons();
+            deleteEdgesButton.classList.remove("active");
+            edge.classed("deletion-active", false);
+            redrawGraph(); // Redraw the graph to update edge visibility
+        }
+    })
+
+    // Add event listener to edges for deletion
+    addEventListenerToSelection<SVGGElement, Edge>(edge, "click", (event, d) => {
+        if (document.getElementById("delete-edge").classList.contains("active")) {
+            console.log("clicking on edge: " + d.source + ", " + d.target);
+            graph.deleteEdge(d.source, d.target);
+            redrawGraph();
+        }
+    });
+
 
     document.getElementById("delete-graph").addEventListener("click", () => {
         deleteAllNodesAndEdges();
     });
-    
+
     updateEdgePositions()
 }

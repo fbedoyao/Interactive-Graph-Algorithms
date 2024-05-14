@@ -19,6 +19,18 @@
             width: 70%;
             float: left;
         }
+
+        .edge {
+            stroke: black;
+            stroke-width: 2px;
+            transition: stroke-width 0.3s, stroke 0.3s; /* Add transition for smoother effect */
+        }
+
+        .edge.deletion-active {
+            stroke: red; /* Change color to red when active */
+            stroke-width: 4px; /* Increase stroke width when active */
+        }
+
         #toolbar {
             display: flex; /* Use flexbox layout */
             flex-direction: column; /* Stack items vertically */
@@ -41,6 +53,10 @@
             background-color: #4CAF50; /* Green */
             color: white;
         }
+        #delete-edge.active {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -50,6 +66,7 @@
         <button id="drag-tool">Drag</button>
         <button id="delete-graph">Delete Graph</button>
         <button id="add-node">Add Node</button>
+        <button id="delete-edge">Delete Edge</button>
         <!-- Add other tools here -->
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>

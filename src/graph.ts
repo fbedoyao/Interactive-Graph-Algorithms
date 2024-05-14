@@ -28,5 +28,10 @@ export class Graph {
       this.edges.push(newEdge);
   }
 
+  deleteEdge(sourceIndex: number, targetIndex: number): void {
+    this.edges = this.edges.filter(edge =>
+        !(edge.source === sourceIndex && edge.target === targetIndex)
+    );
+  }
   // Other graph manipulation methods
 }
