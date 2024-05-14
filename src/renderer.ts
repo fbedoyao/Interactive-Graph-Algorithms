@@ -1,9 +1,10 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge } from './graph';
-import { deactivateAllButtonsExcept, enableAllButtons } from './utils';
+import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, printNodeIndex } from './utils';
 
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
+
     const edge = svg
         .selectAll(".edge")
         .data(graph.edges)
@@ -20,6 +21,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .append("g")
         .classed("node", true)
         .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    addEventListenerToSelection<SVGGElement, Node>(node, "click", printNodeIndex)
 
     node.append("circle")
         .attr("r", 15);
@@ -133,6 +136,9 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     
         // Apply drag behavior to all nodes
         mergedNodes.call(drag);
+
+        // Add event listeners
+        addEventListenerToSelection(mergedNodes, "click", printNodeIndex)
     
         // Update edge positions
         updateEdgePositions();
@@ -183,7 +189,5 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         deleteAllNodesAndEdges();
     });
     
-
-    // Initially draws the edges
     updateEdgePositions()
 }
