@@ -1,59 +1,31 @@
-const graph = {
-    nodes: [
-      {
-        index: 0,
-        x: 450,
-        y: 365
-      },
-      {
-        index: 1,
-        x: 455,
-        y: 86
-      },
-      {
-        index: 2,
-        x: 254,
-        y: 222
-      },
-      {
-        index: 3,
-        x: 695,
-        y: 330
-      },
-      {
-        index: 4,
-        x: 619,
-        y: 135
-      },
-      {
-        index: 5,
-        x: 284,
-        y: 423,
-      }
-    ],
-    edges: [
-        { source: 0, target: 1},
-        { source: 1, target: 2},
-        { source: 2, target: 0},
-        { source: 3, target: 1},
-        { source: 0, target: 4},
-        { source: 5, target: 2},
-    ]
-  };
+import * as d3 from 'd3';
+import { Graph, Node, Edge } from "./graph";
+import { deactivateAllButtonsExcept, enableAllButtons } from './utils';
 
+// Create a new graph instance
+const graph = new Graph();
 
+const dummyNodes = [
+    { index: 0, x: 450, y: 365 },
+    { index: 1, x: 455, y: 86 },
+    { index: 2, x: 254, y: 222 },
+    { index: 3, x: 695, y: 330 },
+    { index: 4, x: 619, y: 135 },
+    { index: 5, x: 284, y: 423 }
+];
 
-function addNode(x, y) {
-    const newNode = {
-        index: graph.nodes.length,
-        x: x,
-        y: y
-    };
+const dummyEdges = [
+    { source: 0, target: 1 },
+    { source: 1, target: 2 },
+    { source: 2, target: 0 },
+    { source: 3, target: 1 },
+    { source: 0, target: 4 },
+    { source: 5, target: 2 }
+];
 
-    graph.nodes.push(newNode)
-}
+graph.nodes = dummyNodes;
+graph.edges = dummyEdges;
 
-  
 const width = 1000;
 const height = Math.min(500, width * 0.6);
 
@@ -99,10 +71,10 @@ node.call(drag);
 function updateEdgePositions() {
     if (graph.edges.length > 0){
         edges
-        .attr("x1", d => graph.nodes[d.source].x)
-        .attr("y1", d => graph.nodes[d.source].y)
-        .attr("x2", d => graph.nodes[d.target].x)
-        .attr("y2", d => graph.nodes[d.target].y);
+            .attr("x1", d => graph.nodes[d.source].x)
+            .attr("y1", d => graph.nodes[d.source].y)
+            .attr("x2", d => graph.nodes[d.target].x)
+            .attr("y2", d => graph.nodes[d.target].y);
     }
 }
 
@@ -176,7 +148,7 @@ function deleteAllNodesAndEdges() {
 
 function redrawGraph() {
     // Update node selection
-    const updatedNodes = svg.selectAll(".node")
+    const updatedNodes = svg.selectAll<SVGGElement, Node>(".node") // Specify the type of the data as Node
         .data(graph.nodes, d => d.index);
 
     // Enter selection for new nodes
@@ -207,24 +179,6 @@ function redrawGraph() {
     updateEdgePositions();
 }
 
-// Function to deactivate all buttons except the specified button
-function deactivateAllButtonsExcept(buttonId) {
-    const buttons = document.querySelectorAll("#toolbar button");
-    buttons.forEach(button => {
-        if (button.id !== buttonId) {
-            button.disabled = true;
-        }
-    });
-}
-
-// Function to enable all buttons
-function enableAllButtons() {
-    const buttons = document.querySelectorAll("#toolbar button");
-    buttons.forEach(button => {
-        button.disabled = false;
-    });
-}
-
 document.getElementById("add-node").addEventListener("click", () => {
     addingNodesEnabled = !addingNodesEnabled; // Toggle the flag
 
@@ -237,7 +191,7 @@ document.getElementById("add-node").addEventListener("click", () => {
         svg.on("click", function(event) {
             if (addingNodesEnabled) { // Check if adding nodes is enabled
                 const [x, y] = d3.pointer(event, this); // Get the mouse coordinates relative to the SVG
-                addNode(x, y); // Call the addNode function with the coordinates
+                graph.addNode(x, y); // Call the addNode function with the coordinates
                 redrawGraph(); // Redraw the graph to reflect the changes
             }
         });
@@ -265,43 +219,11 @@ document.getElementById("drag-tool").addEventListener("click", () => {
     }
 });
 
-// Event listener to display dropdown menu when clicking on a node
-node.on("click", function(event, d) {
-    if (!draggingEnabled && !addingNodesEnabled) {
-        console.log("Click on node " + d.index);
-        const dropdown = document.getElementById("node-dropdown");
-        dropdown.style.display = "block";
-        dropdown.style.left = (d.x + 5) + "px"; // Adjust position as needed
-        dropdown.style.top = (d.y + 5) + "px"; // Adjust position as needed
-
-        // Remove previous event listeners to avoid duplicate listeners
-        document.getElementById("add-edge").removeEventListener("click", addEdgeListener);
-        document.getElementById("delete-node").removeEventListener("click", deleteNodeListener);
-        
-
-        // Handle dropdown options
-
-        // Add event listener for adding edge specific to the clicked node
-        function addEdgeListener() {
-            // Logic to add edge
-            console.log("Adding edge from node " + d.index);
-        }
-        document.getElementById("add-edge").addEventListener("click", addEdgeListener);
-
-        // Add event listener for deleting node specific to the clicked node
-        function deleteNodeListener() {
-            // Logic to delete node
-            console.log("Deleting node " + d.index);
-        }
-        document.getElementById("delete-node").addEventListener("click", deleteNodeListener);
-    }
-});
-
 document.getElementById("delete-graph").addEventListener("click", () => {
     deleteAllNodesAndEdges();
 });
 
+document.getElementById("graph-container").appendChild(svg.node());
+
 // Initially draws the edges
 updateEdgePositions()
-
-document.getElementById("graph-container").appendChild(svg.node());
