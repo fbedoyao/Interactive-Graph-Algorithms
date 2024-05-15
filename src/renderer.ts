@@ -22,8 +22,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .classed("node", true)
         .attr("transform", d => `translate(${d.x}, ${d.y})`);
 
-    addEventListenerToSelection<SVGGElement, Node>(node, "click", printNodeIndex)
-
     node.append("circle")
         .attr("r", 15);
     
@@ -42,6 +40,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     let draggingEnabled = false;
     let addingNodesEnabled = false;
     let deletingEdgesEnabled = false;
+    let deletingNodesEnabled = false;
 
     function getContainerBounds() {        
         return {
@@ -93,10 +92,22 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     function updateEdgePositions() {
         if (graph.edges.length > 0){
             edge
-                .attr("x1", d => graph.nodes[d.source].x)
-                .attr("y1", d => graph.nodes[d.source].y)
-                .attr("x2", d => graph.nodes[d.target].x)
-                .attr("y2", d => graph.nodes[d.target].y);
+                .attr("x1", d => {
+                    const sourceNode = graph.nodes.find(node => node.index === d.source);
+                    return sourceNode ? sourceNode.x : 0; // Return node's x if found, otherwise default to 0
+                })
+                .attr("y1", d => {
+                    const sourceNode = graph.nodes.find(node => node.index === d.source);
+                    return sourceNode ? sourceNode.y : 0; // Return node's y if found, otherwise default to 0
+                })
+                .attr("x2", d => {
+                    const targetNode = graph.nodes.find(node => node.index === d.target);
+                    return targetNode ? targetNode.x : 0; // Return node's x if found, otherwise default to 0
+                })
+                .attr("y2", d => {
+                    const targetNode = graph.nodes.find(node => node.index === d.target);
+                    return targetNode ? targetNode.y : 0; // Return node's y if found, otherwise default to 0
+                });
         }
     }
 
@@ -110,10 +121,14 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function redrawGraph() {
+
         // Update node selection
         const updatedNodes = svg.selectAll<SVGGElement, Node>(".node") // Specify the type of the data as Node
             .data(graph.nodes, d => d.index);
-    
+        
+        // Remove any nodes that are no longer in the data
+        updatedNodes.exit().remove();
+
         // Enter selection for new nodes
         const newNodeGroups = updatedNodes.enter()
             .append("g")
@@ -139,11 +154,28 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         mergedNodes.call(drag);
 
         // Add event listeners
-        addEventListenerToSelection(mergedNodes, "click", printNodeIndex)
+        addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", (e, d) => {
+            if (document.getElementById("delete-node").classList.contains("active")){
+                // Delete logic here
+                graph.deleteNode(d.index);
+                redrawGraph();
+                console.log(graph);
+            }
+        })
+
+        // Apply deletion-active class to newly added nodes if deletion mode is enabled
+        if (deletingNodesEnabled) {
+            mergedNodes.classed("deletion-active", true);
+        } else {
+            mergedNodes.classed("deletion-active", false);
+        }
 
         // Update edge selection
         const updatedEdges = svg.selectAll<SVGLineElement, Edge>(".edge")
             .data(graph.edges);
+
+        // Remove any edges that are no longer in the data
+        updatedEdges.exit().remove();
 
         // Enter selection for new edges
         const newEdgeLines = updatedEdges.enter()
@@ -157,14 +189,22 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
         // Update positions of existing edges
         mergedEdges
-            .attr("x1", d => graph.nodes[d.source].x)
-            .attr("y1", d => graph.nodes[d.source].y)
-            .attr("x2", d => graph.nodes[d.target].x)
-            .attr("y2", d => graph.nodes[d.target].y);
-
-        // Remove any edges that are no longer in the data
-        updatedEdges.exit().remove();
-
+            .attr("x1", d => {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                return sourceNode ? sourceNode.x : 0; // Return node's x if found, otherwise default to 0
+            })
+            .attr("y1", d => {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                return sourceNode ? sourceNode.y : 0; // Return node's y if found, otherwise default to 0
+            })
+            .attr("x2", d => {
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                return targetNode ? targetNode.x : 0; // Return node's x if found, otherwise default to 0
+            })
+            .attr("y2", d => {
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                return targetNode ? targetNode.y : 0; // Return node's y if found, otherwise default to 0
+            });
         // Update edge positions
         updateEdgePositions();
     }
@@ -208,6 +248,31 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             svg.classed('dragging', false); // Remove class from SVG container
         }
     });
+
+    document.getElementById("delete-node").addEventListener("click", () => {
+        deletingNodesEnabled = !deletingNodesEnabled;
+        const deleteNodesButton = document.getElementById("delete-node");
+        if (deletingNodesEnabled) {
+            deactivateAllButtonsExcept("delete-node");
+            deleteNodesButton.classList.add("active");
+            node.classed("deletion-active", true);
+            redrawGraph();
+        } else{
+            enableAllButtons();
+            deleteNodesButton.classList.remove("active");
+            node.classed("deletion-active", false);
+            redrawGraph();
+        }
+    })
+
+    addEventListenerToSelection<SVGGElement, Node>(node, "click", (e, d) => {
+        if (document.getElementById("delete-node").classList.contains("active")){
+            // Delete logic here
+            graph.deleteNode(d.index);
+            redrawGraph();
+            console.log(graph);
+        }
+    })
 
     document.getElementById("delete-edge").addEventListener("click", () => {
         deletingEdgesEnabled = !deletingEdgesEnabled;
