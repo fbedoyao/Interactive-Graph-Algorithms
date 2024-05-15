@@ -19,8 +19,9 @@ export class Graph {
   }
 
   addNode(x: number, y: number): void {
-      const newNode = { index: this.nodes.length, x, y };
-      this.nodes.push(newNode);
+    const smallestUnusedIndex = this.findSmallestUnusedIndex();
+    const newNode = { index: smallestUnusedIndex, x, y };
+    this.nodes.push(newNode);
   }
 
   addEdge(source: number, target: number): void {
@@ -33,5 +34,25 @@ export class Graph {
         !(edge.source === sourceIndex && edge.target === targetIndex)
     );
   }
-  // Other graph manipulation methods
+
+  deleteNode(nodeIndex: number): void {
+        // Remove the node from the nodes array
+        this.nodes = this.nodes.filter(node => node.index !== nodeIndex);
+
+        // Remove any edges connected to the deleted node
+        this.edges = this.edges.filter(edge =>
+            edge.source !== nodeIndex && edge.target !== nodeIndex
+        );
+  }
+
+  findSmallestUnusedIndex(): number {
+    const usedIndices = new Set(this.nodes.map(node => node.index));
+    let smallestUnusedIndex = 0;
+    while (usedIndices.has(smallestUnusedIndex)) {
+        smallestUnusedIndex++;
+    }
+    return smallestUnusedIndex;
+  }
+
+
 }
