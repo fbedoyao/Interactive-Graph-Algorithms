@@ -208,13 +208,16 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 console.log(graph);
             } else if (addingEdgesEnabled) {
                 if (sourceNode === null){
+                    console.log("source: " + d.index);
                     sourceNode = d.index;
                     redrawGraph();
                 } else{
+                    console.log("target: " + d.index);
                     const targetNode = d.index;
                     graph.addEdge(sourceNode, targetNode);
                     sourceNode = null;
                     redrawGraph();
+                    console.log(graph);
                 }
             }
         })
@@ -226,6 +229,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             mergedNodes.classed("deletion-active", false);
         }
 
+        // Apply deletion-active class to newly added edges if deletion mode is enabled
         if (deletingEdgesEnabled) {
             mergedEdges.classed("deletion-active", true);
         } else {
@@ -311,8 +315,10 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         } else if (addingEdgesEnabled) {
             if (sourceNode === null){
                 sourceNode = d.index;
+                console.log("source: " + d.index);
             } else{
                 const targetNode = d.index;
+                console.log("target: " + d.index);
                 graph.addEdge(sourceNode, targetNode);
                 sourceNode = null;
                 redrawGraph();
@@ -342,6 +348,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         if (document.getElementById("delete-edge").classList.contains("active")) {
             console.log("clicking on edge: " + d.source + ", " + d.target);
             graph.deleteEdge(d.source, d.target);
+            console.log(graph);
             redrawGraph();
         }
     });

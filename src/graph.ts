@@ -25,7 +25,7 @@ export class Graph {
   }
 
   addEdge(source: number, target: number): void {
-    if (!this.edgeExists(source, target)) {
+    if (!this.edgeExists(source, target) && source !== target) {
       const newEdge = { source, target };
       this.edges.push(newEdge);
     }
