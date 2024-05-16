@@ -61,4 +61,40 @@ export class Graph {
       edge => edge.source === source && edge.target === target
     );
   }
+
+  getAdjacencyList(): Map<number, number[]> {
+    const adjacencyList = new Map<number, number[]>();
+
+    // Initialize adjacency list with empty arrays for each node
+    this.nodes.forEach(node => {
+      adjacencyList.set(node.index, []);
+    });
+
+    // Populate adjacency list with edges
+    this.edges.forEach(edge => {
+      adjacencyList.get(edge.source)?.push(edge.target);
+      adjacencyList.get(edge.target)?.push(edge.source); // If undirected graph, add this line
+    });
+
+    return adjacencyList;
+  }
+
+  getAdjacencyMatrix(): number[][] {
+    const matrixSize = this.nodes.length;
+    const adjacencyMatrix: number[][] = [];
+
+    // Initialize matrix with zeros
+    for (let i = 0; i < matrixSize; i++) {
+      adjacencyMatrix.push(new Array(matrixSize).fill(0));
+    }
+
+    // Populate matrix with edges
+    this.edges.forEach(edge => {
+      adjacencyMatrix[edge.source][edge.target] = 1;
+      adjacencyMatrix[edge.target][edge.source] = 1; // If undirected graph, add this line
+    });
+
+    return adjacencyMatrix;
+  }
+
 }
