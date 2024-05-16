@@ -162,7 +162,11 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 return targetNode ? targetNode.y : 0; // Return node's y if found, otherwise default to 0
             });
         // Update edge positions
+        mergedEdges.lower();
         updateEdgePositions();
+
+        // Add event listener to edges for deletion
+
 
         // Update node selection
         const updatedNodes = svg.selectAll<SVGGElement, Node>(".node") // Specify the type of the data as Node
@@ -220,6 +224,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             mergedNodes.classed("deletion-active", true);
         } else {
             mergedNodes.classed("deletion-active", false);
+        }
+
+        if (deletingEdgesEnabled) {
+            mergedEdges.classed("deletion-active", true);
+        } else {
+            mergedEdges.classed("deletion-active", false);
         }
     }
 
