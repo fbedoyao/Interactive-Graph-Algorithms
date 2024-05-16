@@ -25,8 +25,10 @@ export class Graph {
   }
 
   addEdge(source: number, target: number): void {
+    if (!this.edgeExists(source, target) && source !== target) {
       const newEdge = { source, target };
       this.edges.push(newEdge);
+    }
   }
 
   deleteEdge(sourceIndex: number, targetIndex: number): void {
@@ -45,7 +47,7 @@ export class Graph {
         );
   }
 
-  findSmallestUnusedIndex(): number {
+  private findSmallestUnusedIndex(): number {
     const usedIndices = new Set(this.nodes.map(node => node.index));
     let smallestUnusedIndex = 0;
     while (usedIndices.has(smallestUnusedIndex)) {
@@ -54,5 +56,9 @@ export class Graph {
     return smallestUnusedIndex;
   }
 
-
+  private edgeExists(source: number, target: number): boolean {
+    return this.edges.some(
+      edge => edge.source === source && edge.target === target
+    );
+  }
 }

@@ -41,6 +41,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     let addingNodesEnabled = false;
     let deletingEdgesEnabled = false;
     let deletingNodesEnabled = false;
+    let addingEdgesEnabled = false;
+    let sourceNode = null;
 
     function getContainerBounds() {        
         return {
@@ -72,14 +74,16 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         
             // Update the visual position of the node only if it stays within the boundaries
             d3.select(this)
-            .attr("transform", `translate(${constrainedX}, ${constrainedY})`);
+                .attr("transform", `translate(${constrainedX}, ${constrainedY})`);
         
             // Update the position of the dragged node in the graph data structure
             d.x = constrainedX;
             d.y = constrainedY;
         
             // Update the positions of the connected edges
+            redrawGraph();
             updateEdgePositions();
+
         }
     }
     
@@ -122,6 +126,48 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
     function redrawGraph() {
 
+        // Update edge selection
+        const updatedEdges = svg.selectAll<SVGLineElement, Edge>(".edge")
+            .data(graph.edges);
+
+        // Remove any edges that are no longer in the data
+        updatedEdges.exit().remove();
+
+        // Enter selection for new edges
+        const newEdgeLines = updatedEdges.enter()
+            .append("line")
+            .classed("edge", true)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2);
+
+        // Merge new edges with existing edges
+        const mergedEdges = newEdgeLines.merge(updatedEdges);
+
+        // Update positions of existing edges
+        mergedEdges
+            .attr("x1", d => {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                return sourceNode ? sourceNode.x : 0; // Return node's x if found, otherwise default to 0
+            })
+            .attr("y1", d => {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                return sourceNode ? sourceNode.y : 0; // Return node's y if found, otherwise default to 0
+            })
+            .attr("x2", d => {
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                return targetNode ? targetNode.x : 0; // Return node's x if found, otherwise default to 0
+            })
+            .attr("y2", d => {
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                return targetNode ? targetNode.y : 0; // Return node's y if found, otherwise default to 0
+            });
+        // Update edge positions
+        mergedEdges.lower();
+        updateEdgePositions();
+
+        // Add event listener to edges for deletion
+
+
         // Update node selection
         const updatedNodes = svg.selectAll<SVGGElement, Node>(".node") // Specify the type of the data as Node
             .data(graph.nodes, d => d.index);
@@ -160,6 +206,19 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 graph.deleteNode(d.index);
                 redrawGraph();
                 console.log(graph);
+            } else if (addingEdgesEnabled) {
+                if (sourceNode === null){
+                    console.log("source: " + d.index);
+                    sourceNode = d.index;
+                    redrawGraph();
+                } else{
+                    console.log("target: " + d.index);
+                    const targetNode = d.index;
+                    graph.addEdge(sourceNode, targetNode);
+                    sourceNode = null;
+                    redrawGraph();
+                    console.log(graph);
+                }
             }
         })
 
@@ -170,43 +229,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             mergedNodes.classed("deletion-active", false);
         }
 
-        // Update edge selection
-        const updatedEdges = svg.selectAll<SVGLineElement, Edge>(".edge")
-            .data(graph.edges);
-
-        // Remove any edges that are no longer in the data
-        updatedEdges.exit().remove();
-
-        // Enter selection for new edges
-        const newEdgeLines = updatedEdges.enter()
-            .append("line")
-            .classed("edge", true)
-            .attr("stroke", "black")
-            .attr("stroke-width", 2);
-
-        // Merge new edges with existing edges
-        const mergedEdges = newEdgeLines.merge(updatedEdges);
-
-        // Update positions of existing edges
-        mergedEdges
-            .attr("x1", d => {
-                const sourceNode = graph.nodes.find(node => node.index === d.source);
-                return sourceNode ? sourceNode.x : 0; // Return node's x if found, otherwise default to 0
-            })
-            .attr("y1", d => {
-                const sourceNode = graph.nodes.find(node => node.index === d.source);
-                return sourceNode ? sourceNode.y : 0; // Return node's y if found, otherwise default to 0
-            })
-            .attr("x2", d => {
-                const targetNode = graph.nodes.find(node => node.index === d.target);
-                return targetNode ? targetNode.x : 0; // Return node's x if found, otherwise default to 0
-            })
-            .attr("y2", d => {
-                const targetNode = graph.nodes.find(node => node.index === d.target);
-                return targetNode ? targetNode.y : 0; // Return node's y if found, otherwise default to 0
-            });
-        // Update edge positions
-        updateEdgePositions();
+        // Apply deletion-active class to newly added edges if deletion mode is enabled
+        if (deletingEdgesEnabled) {
+            mergedEdges.classed("deletion-active", true);
+        } else {
+            mergedEdges.classed("deletion-active", false);
+        }
     }
 
     document.getElementById("add-node").addEventListener("click", () => {
@@ -230,6 +258,19 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             addButton.classList.remove("active"); // Change button appearance
             svg.style('cursor', 'auto'); // Change cursor to crosshair
             svg.on("click", null); // Disable adding nodes functionality
+        }
+    });
+
+    document.getElementById("add-edge").addEventListener("click", () => {
+        addingEdgesEnabled = !addingEdgesEnabled;
+
+        const addEdgeButton = document.getElementById("add-edge");
+        if (addingEdgesEnabled){
+            deactivateAllButtonsExcept("add-edge");
+            addEdgeButton.classList.add("active");
+        } else {
+            enableAllButtons();
+            addEdgeButton.classList.remove("active");
         }
     });
 
@@ -271,6 +312,18 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             graph.deleteNode(d.index);
             redrawGraph();
             console.log(graph);
+        } else if (addingEdgesEnabled) {
+            if (sourceNode === null){
+                sourceNode = d.index;
+                console.log("source: " + d.index);
+            } else{
+                const targetNode = d.index;
+                console.log("target: " + d.index);
+                graph.addEdge(sourceNode, targetNode);
+                sourceNode = null;
+                redrawGraph();
+                console.log(graph);
+            }
         }
     })
 
@@ -295,6 +348,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         if (document.getElementById("delete-edge").classList.contains("active")) {
             console.log("clicking on edge: " + d.source + ", " + d.target);
             graph.deleteEdge(d.source, d.target);
+            console.log(graph);
             redrawGraph();
         }
     });

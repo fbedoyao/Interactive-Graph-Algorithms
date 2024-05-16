@@ -42,7 +42,7 @@
             flex-direction: column; /* Stack items vertically */
             align-items: flex-start; /* Align items to the start of the container */
             margin-left: 20px;
-            width: 20%; /* Set the width of the toolbar */
+            width: 25%; /* Set the width of the toolbar */
             margin-top: 10px; /* Adjust margin top to create space */
             padding-left: 10px; /* Add padding for better appearance */
         }
@@ -56,6 +56,10 @@
             color: white;
         }
         #add-node.active {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        #add-edge.active {
             background-color: #4CAF50; /* Green */
             color: white;
         }
@@ -78,6 +82,7 @@
         <button id="add-node">Add Node</button>
         <button id="delete-edge">Delete Edge</button>
         <button id="delete-node">Delete Node</button>
+        <button id="add-edge">Add Edge</button>
         <!-- Add other tools here -->
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>
