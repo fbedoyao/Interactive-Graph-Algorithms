@@ -19,7 +19,22 @@
             <button id="delete-edge" type="button">Delete Edge</button>
             <button id="delete-node" type="button">Delete Node</button>
             <button id="add-edge" type="button">Add Edge</button>
+            <div id="algorithm-selector-container">
+                <label for="algorithm-select">Choose an algorithm:</label>
+                <select id="algorithm-select">
+                    <option value="bfs">Breadth-First Search</option>
+                    <option value="dfs">Depth-First Search</option>
+                    <option value="dijkstra">Dijkstra's Algorithm</option>
+                    <option value="a-star">A* Search</option>
+                    <!-- Add other algorithms as needed -->
+                </select>
+                <button id="run-algorithm" type="button">Run</button>
+            </div>
         </nav>
+        <section id="output-container" role="region" aria-label="Output Container">
+            <h2>Output</h2>
+            <div id="output-box"></div>
+        </section>
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>
     <script src="dist/bundle.js"></script>

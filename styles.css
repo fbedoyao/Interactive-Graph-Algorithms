@@ -70,3 +70,58 @@ header h1 {
 #toolbar button:hover:not(.active) {
     background-color: #ddd;
 }
+
+#algorithm-selector-container {
+    padding: 20px;
+    margin-top: 30px;
+}
+
+#algorithm-selector-container label {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#algorithm-selector-container select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#run-algorithm {
+    background-color: #2196F3 !important; /* Distinctive blue color */
+    color: white !important;
+    font-weight: bold !important;
+    padding: 10px !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    transition: background-color 0.3s, color 0.3s !important;
+}
+
+#run-algorithm:hover {
+    background-color: #1976D2 !important; /* Darker blue on hover */
+}
+
+#run-algorithm:active {
+    background-color: #1565C0 !important; /* Even darker blue when active (clicked) */
+}
+
+#output-container {
+    margin-left: 20px;
+    width: 70%;
+    float: left;
+}
+
+#output-container h2 {
+    margin-top: 20px;
+}
+
+#output-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 100px;
+    background-color: #f9f9f9;
+}
