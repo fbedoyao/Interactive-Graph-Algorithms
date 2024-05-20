@@ -4,87 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Graph Algorithms</title>
-    <style>
-        .node {
-            cursor: pointer;
-            fill: #ccc;
-            stroke: #000;
-            stroke-width: 1.5px;
-            transition: stroke-width 0.3s, stroke 0.3s; /* Add transition for smoother effect */
-        }
-        .dragging .node {
-            cursor: move;
-        }
-        .node.deletion-active {
-            stroke: red; /* Change color to red when active */
-            stroke-width: 4px; /* Increase stroke width when active */
-        }
-
-        #graph-container {
-            border: 2px solid black;
-            width: 70%;
-            float: left;
-        }
-
-        .edge {
-            stroke: black;
-            stroke-width: 2px;
-            transition: stroke-width 0.3s, stroke 0.3s; /* Add transition for smoother effect */
-        }
-
-        .edge.deletion-active {
-            stroke: red; /* Change color to red when active */
-            stroke-width: 4px; /* Increase stroke width when active */
-        }
-
-        #toolbar {
-            display: flex; /* Use flexbox layout */
-            flex-direction: column; /* Stack items vertically */
-            align-items: flex-start; /* Align items to the start of the container */
-            margin-left: 20px;
-            width: 25%; /* Set the width of the toolbar */
-            margin-top: 10px; /* Adjust margin top to create space */
-            padding-left: 10px; /* Add padding for better appearance */
-        }
-        #toolbar button {
-            width: 30%; /* Set fixed width for buttons */
-            text-align: center; /* Center the text */
-            margin-bottom: 10px; /* Add margin bottom to create space between buttons */
-        }
-        #drag-tool.active {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-        #add-node.active {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-        #add-edge.active {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-        #delete-edge.active {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-        #delete-node.active {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Interactive Graph Algorithms</h1>
-    <div id="graph-container" style="position: relative;"></div>
-    <div id="toolbar">
-        <button id="drag-tool">Drag</button>
-        <button id="delete-graph">Delete Graph</button>
-        <button id="add-node">Add Node</button>
-        <button id="delete-edge">Delete Edge</button>
-        <button id="delete-node">Delete Node</button>
-        <button id="add-edge">Add Edge</button>
-        <!-- Add other tools here -->
-    </div>
+    <header>
+        <h1>Interactive Graph Algorithms</h1>
+    </header>
+    <main>
+        <div id="graph-container" role="region" aria-label="Graph Container" style="position: relative;"></div>
+        <nav id="toolbar" aria-label="Graph Tools">
+            <button id="drag-tool" type="button">Drag</button>
+            <button id="delete-graph" type="button">Delete Graph</button>
+            <button id="add-node" type="button">Add Node</button>
+            <button id="delete-edge" type="button">Delete Edge</button>
+            <button id="delete-node" type="button">Delete Node</button>
+            <button id="add-edge" type="button">Add Edge</button>
+            <div id="algorithm-selector-container">
+                <label for="algorithm-select">Choose an algorithm:</label>
+                <select id="algorithm-select">
+                    <option value="print">Print Graph</option>
+                    <option value="bfs">Breadth-First Search</option>
+                    <option value="dfs">Depth-First Search</option>
+                    <option value="dijkstra">Dijkstra's Algorithm</option>
+                    <option value="a-star">A* Search</option>
+                    <!-- Add other algorithms as needed -->
+                </select>
+                <button id="run-algorithm" type="button">Run</button>
+            </div>
+        </nav>
+        <section id="output-container" role="region" aria-label="Output Container">
+            <h2>Output</h2>
+            <div id="output-box"></div>
+        </section>
+    </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>
     <script src="dist/bundle.js"></script>
 </body>
