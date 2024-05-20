@@ -82,6 +82,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 sourceNode = d.index;
                 console.log("source: " + d.index);
             } else {
+                console.log("target: " + d.index);
                 graph.addEdge(sourceNode, d.index);
                 sourceNode = null;
                 redrawGraph();

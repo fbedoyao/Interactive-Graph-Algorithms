@@ -12,10 +12,12 @@ export interface Edge {
 export class Graph {
   nodes: Node[];
   edges: Edge[];
+  isDirected: boolean;
 
   constructor() {
       this.nodes = [];
       this.edges = [];
+      this.isDirected = false;
   }
 
   addNode(x: number, y: number): void {
@@ -25,9 +27,31 @@ export class Graph {
   }
 
   addEdge(source: number, target: number): void {
-    if (!this.edgeExists(source, target) && source !== target) {
-      const newEdge = { source, target };
-      this.edges.push(newEdge);
+    if (!this.isDirected){
+      console.log("Trying to add edge " + source + ", " + target + " in UNDIRECTED graph.");
+      if (!this.edgeExists(source, target) && !this.edgeExists(target, source)) {
+        if (source !== target){
+          console.log("Edge doesn't exist. Adding it to the graph.");
+          const newEdge = { source, target };
+          this.edges.push(newEdge);
+        } else {
+          console.log("Self-loops aren't allowed in undirected graphs. Edge can't be added to the graph.");
+        }
+      } else{
+        console.log("Edge exists. It can't be added to the graph.")
+      }
+    } else {
+      console.log("Trying to add edge " + source + ", " + target + " in DIRECTED graph.");
+      if (!this.edgeExists(source, target)){
+        if (source === target) {
+          console.log("Edge is a self-loop.");
+        }
+        console.log("Edge doesn't exist. Adding it to the graph.");
+        const newEdge = { source, target };
+        this.edges.push(newEdge);
+      } else {
+        console.log("Edge exists. It can't be added to the graph.")
+      }
     }
   }
 
@@ -73,7 +97,9 @@ export class Graph {
     // Populate adjacency list with edges
     this.edges.forEach(edge => {
       adjacencyList.get(edge.source)?.push(edge.target);
-      adjacencyList.get(edge.target)?.push(edge.source); // If undirected graph, add this line
+      if (!this.isDirected){
+        adjacencyList.get(edge.target)?.push(edge.source); // If undirected graph, add this line
+      }
     });
 
     return adjacencyList;
@@ -91,7 +117,9 @@ export class Graph {
     // Populate matrix with edges
     this.edges.forEach(edge => {
       adjacencyMatrix[edge.source][edge.target] = 1;
-      adjacencyMatrix[edge.target][edge.source] = 1; // If undirected graph, add this line
+      if (!this.isDirected){
+        adjacencyMatrix[edge.target][edge.source] = 1; // If undirected graph, add this line
+      }
     });
 
     return adjacencyMatrix;
