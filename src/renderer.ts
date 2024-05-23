@@ -127,6 +127,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Check if graph is directed
         }
     }
+    
 
     function deleteAllNodesAndEdges() {
         graph.nodes = [];
@@ -299,8 +300,10 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
     // Main execution starts here
 
-    // Define arrowhead marker
-    svg.append("defs").append("marker")
+    const defs = svg.append("defs");
+
+    // Arrowhead marker
+    defs.append("marker")
         .attr("id", "arrowhead")
         .attr("viewBox", "0 -5 10 10")
         .attr("refX", 15)  // Adjust the position of the arrowhead relative to the end of the line
@@ -311,7 +314,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .append("path")
         .attr("d", "M 0,-5 L 10,0 L 0,5")
         .attr("fill", "#000");
-
+    
     const edge = svg
         .selectAll(".edge")
         .data(graph.edges)
