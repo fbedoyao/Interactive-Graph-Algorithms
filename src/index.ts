@@ -22,11 +22,13 @@ const dummyEdges = [
     { source: 2, target: 0 },
     { source: 3, target: 1 },
     { source: 0, target: 4 },
-    { source: 5, target: 2 }
+    { source: 5, target: 2 },
+    { source: 3, target: 3}
 ];
 
 graph.nodes = dummyNodes;
 graph.edges = dummyEdges;
+graph.isDirected = true;
 
 const width = 1000;
 const height = Math.min(500, width * 0.6);
