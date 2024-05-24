@@ -50,84 +50,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function updateEdgePositions(edgesSVGElement) {
-        /*
-        if (graph.edges.length > 0) {
-            edgesSVGElement
-                .attr("x1", d => {
-                    const sourceNode = graph.nodes.find(node => node.index === d.source);
-                    const targetNode = graph.nodes.find(node => node.index === d.target);
-                    if (sourceNode && targetNode) {
-                        const dx = targetNode.x - sourceNode.x;
-                        const dy = targetNode.y - sourceNode.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const radius = 15; // Radius of the node circle
-                        if (distance > radius) {
-                            const offsetX = dx * (radius / distance);
-                            const offsetY = dy * (radius / distance);
-                            return sourceNode.x + offsetX;
-                        } else {
-                            return sourceNode.x;
-                        }
-                    }
-                    return 0;
-                })
-                .attr("y1", d => {
-                    const sourceNode = graph.nodes.find(node => node.index === d.source);
-                    const targetNode = graph.nodes.find(node => node.index === d.target);
-                    if (sourceNode && targetNode) {
-                        const dx = targetNode.x - sourceNode.x;
-                        const dy = targetNode.y - sourceNode.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const radius = 15; // Radius of the node circle
-                        if (distance > radius) {
-                            const offsetY = dy * (radius / distance);
-                            const offsetX = dx * (radius / distance);
-                            return sourceNode.y + offsetY;
-                        } else {
-                            return sourceNode.y;
-                        }
-                    }
-                    return 0;
-                })
-                .attr("x2", d => {
-                    const sourceNode = graph.nodes.find(node => node.index === d.source);
-                    const targetNode = graph.nodes.find(node => node.index === d.target);
-                    if (sourceNode && targetNode) {
-                        const dx = sourceNode.x - targetNode.x;
-                        const dy = sourceNode.y - targetNode.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const radius = 15; // Radius of the node circle
-                        if (distance > radius) {
-                            const offsetX = dx * (radius / distance);
-                            const offsetY = dy * (radius / distance);
-                            return targetNode.x + offsetX;
-                        } else {
-                            return targetNode.x;
-                        }
-                    }
-                    return 0;
-                })
-                .attr("y2", d => {
-                    const sourceNode = graph.nodes.find(node => node.index === d.source);
-                    const targetNode = graph.nodes.find(node => node.index === d.target);
-                    if (sourceNode && targetNode) {
-                        const dx = sourceNode.x - targetNode.x;
-                        const dy = sourceNode.y - targetNode.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const radius = 15; // Radius of the node circle
-                        if (distance > radius) {
-                            const offsetX = dx * (radius / distance);
-                            const offsetY = dy * (radius / distance);
-                            return targetNode.y + offsetY;
-                        } else {
-                            return targetNode.y;
-                        }
-                    }
-                    return 0;
-                })
-                .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Check if graph is directed
-        }
-        */
         if (graph.edges.length > 0) {
             edgesSVGElement.attr("d", function(d) {
                 const sourceNode = graph.nodes.find(node => node.index === d.source);
@@ -365,8 +287,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .attr("viewBox", "0 -5 10 10")
         .attr("refX", 10)  // Adjust the position of the arrowhead relative to the end of the line
         .attr("refY", 0)
-        .attr("markerWidth", 6)
-        .attr("markerHeight", 6)
+        .attr("markerWidth", 5)
+        .attr("markerHeight", 5)
         .attr("orient", "auto")
         .append("path")
         .attr("d", "M 0,-5 L 10,0 L 0,5")
@@ -412,7 +334,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 return `M ${sourceNode.x},${sourceNode.y} L ${targetNode.x*0.8},${targetNode.y*0.8}`;
             }
         })
-        .attr("marker-end", d => graph.isDirected && d.source !== d.target ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
+        .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
 
 
     const node = svg
