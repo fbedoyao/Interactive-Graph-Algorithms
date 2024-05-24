@@ -22,7 +22,8 @@ const dummyEdges = [
     { source: 2, target: 0 },
     { source: 3, target: 1 },
     { source: 0, target: 4 },
-    { source: 5, target: 2 }
+    { source: 5, target: 2 },
+    { source: 3, target: 3}
 ];
 
 graph.nodes = dummyNodes;

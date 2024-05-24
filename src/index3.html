@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Self-Loop Example</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .node circle {
+            fill: #69b3a2;
+            stroke: #333;
+            stroke-width: 2px;
+        }
+
+        .node text {
+            font-size: 12px;
+            fill: #fff;
+            pointer-events: none;
+        }
+
+        .line {
+            stroke: black;
+            stroke-width: 1.5px;
+            fill: none;
+        }
+    </style>
+</head>
+<body>
+    <svg width="800" height="600"></svg>
+    <script>
+        const svg = d3.select("svg");
+
+        const defs = svg.append("defs");
+
+        // Define the self-loop marker
+        defs.append("marker")
+            .attr("id", "self-loop")
+            .attr("viewBox", "0 0 20 20")
+            .attr("refX", 10) // Reference point at the center
+            .attr("refY", 10)
+            .attr("markerWidth", 20)
+            .attr("markerHeight", 20)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M 10,10 m -5,0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0")
+            .attr("fill", "none")
+            .attr("stroke", "black");
+
+        const graph = {
+            nodes: [
+                { x: 100, y: 100, index: 0 },
+                { x: 200, y: 200, index: 1 },
+                { x: 300, y: 100, index: 2 }
+            ]
+        };
+
+        const node = svg
+            .selectAll(".node")
+            .data(graph.nodes)
+            .enter()
+            .append("g")
+            .classed("node", true)
+            .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+        node
+            .append("circle")
+            .attr("r", 15);
+
+        node
+            .append("text")
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .text(d => d.index);
+
+        // Function to create a self-loop
+        function createSelfLoop(selection) {
+            selection.each(function(d) {
+                const g = d3.select(this);
+                const selfLoop = g.append("path")
+                    .attr("class", "line")
+                    .attr("d", "M 15,0 C 30,-30 30,30 15,0") // Example cubic Bézier curve for a loop
+                    .attr("marker-end", "url(#self-loop)");
+            });
+        }
+
+        // Apply self-loop to each node
+        node.call(createSelfLoop);
+    </script>
+</body>
+</html>

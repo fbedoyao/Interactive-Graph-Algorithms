@@ -50,6 +50,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function updateEdgePositions(edgesSVGElement) {
+        /*
         if (graph.edges.length > 0) {
             edgesSVGElement
                 .attr("x1", d => {
@@ -126,7 +127,40 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 })
                 .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Check if graph is directed
         }
+        */
+        if (graph.edges.length > 0) {
+            edgesSVGElement.attr("d", function(d) {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                
+                if (sourceNode && targetNode) {
+                    if (sourceNode.index === targetNode.index) {
+                        // Self-looping path
+                        const startPointAngle = 5 * Math.PI / 4;
+                        const endPointAngle = 7 * Math.PI / 4;
+                        const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
+                        const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
+                        const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
+                        return `M ${startPoint.x},${startPoint.y} Q ${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
+                    } else {
+                        // Regular path (shortened line)
+                        const dx = targetNode.x - sourceNode.x;
+                        const dy = targetNode.y - sourceNode.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const shortenLength = 15; // Adjust to shorten or lengthen the lines
+                        const newX = sourceNode.x + (dx / length) * (length - shortenLength);
+                        const newY = sourceNode.y + (dy / length) * (length - shortenLength);
+                        return `M ${sourceNode.x},${sourceNode.y} L ${newX},${newY}`;
+                    }
+                } else {
+                    // Handle case where sourceNode or targetNode is undefined
+                    return null; // or handle appropriately based on your application logic
+                }
+            })
+            .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); 
+        }
     }
+        
     
 
     function deleteAllNodesAndEdges() {
@@ -146,12 +180,13 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
     function handleNodeClick(event, d) {
         if (deletingNodesEnabled) {
+            console.log("Deleting node " + d.index);
             graph.deleteNode(d.index);
             redrawGraph();
-            console.log(graph);
         } else if (addingEdgesEnabled) {
             if (sourceNode === null) {
                 sourceNode = d.index;
+                console.log("Adding edge ...");
                 console.log("source: " + d.index);
             } else {
                 console.log("target: " + d.index);
@@ -160,6 +195,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 redrawGraph();
                 console.log(graph);
             }
+        } else {
+            console.log("Clicked on node " + d.index);
         }
     }
 
@@ -167,24 +204,25 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         if (deletingEdgesEnabled) {
             graph.deleteEdge(d.source, d.target);
             redrawGraph();
-            console.log(graph);
+        } else {
+            console.log("Click on edge " + "(" + d.source + ", " + d.target + ")");
         }
     }
 
     function redrawGraph() {
         const updatedEdges = svg
-            .selectAll<SVGLineElement, Edge>(".edge")
+            .selectAll<SVGPathElement, Edge>(".edge")
             .data(graph.edges);
         updatedEdges.exit().remove();
-        const newEdgeLines = updatedEdges
+        const newEdgePaths = updatedEdges
             .enter()
-            .append("line")
+            .append("path")
             .classed("edge", true)
             .attr("stroke", "black")
             .attr("stroke-width", 2)
             .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Set marker-end for new edges
 
-        const mergedEdges = newEdgeLines.merge(updatedEdges);
+        const mergedEdges = newEdgePaths.merge(updatedEdges);
         updateEdgePositions(mergedEdges);
         mergedEdges.lower();
 
@@ -210,7 +248,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("transform", d => `translate(${d.x}, ${d.y})`)
             .call(drag);
         addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", handleNodeClick);
-        addEventListenerToSelection<SVGLineElement, Edge>(mergedEdges, "click", handleEdgeClick);
+        addEventListenerToSelection<SVGPathElement, Edge>(mergedEdges, "click", handleEdgeClick);
         applyDeletionClass(mergedNodes, deletingNodesEnabled);
         applyDeletionClass(mergedEdges, deletingEdgesEnabled);
     }
@@ -298,6 +336,25 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         redrawGraph();
     }
 
+    // Self - loops
+    function getFixedPointOnCircle(cx, cy, radius, angle) {
+        return {
+            x: cx + radius * Math.cos(angle),
+            y: cy + radius * Math.sin(angle)
+        };
+    }
+
+    function getOutwardControlPoint(cx, cy, px, py, distance) {
+        const dx = px - cx;
+        const dy = py - cy;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const scale = (length + distance) / length;
+        return {
+            x: cx + dx * scale,
+            y: cy + dy * scale
+        };
+    }
+
     // Main execution starts here
 
     const defs = svg.append("defs");
@@ -306,7 +363,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     defs.append("marker")
         .attr("id", "arrowhead")
         .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 15)  // Adjust the position of the arrowhead relative to the end of the line
+        .attr("refX", 10)  // Adjust the position of the arrowhead relative to the end of the line
         .attr("refY", 0)
         .attr("markerWidth", 6)
         .attr("markerHeight", 6)
@@ -314,7 +371,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .append("path")
         .attr("d", "M 0,-5 L 10,0 L 0,5")
         .attr("fill", "#000");
-    
+
+    /*
     const edge = svg
         .selectAll(".edge")
         .data(graph.edges)
@@ -324,6 +382,38 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .attr("stroke", "black")
         .attr("stroke-width", 2)
         .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
+    */
+
+    const edge = svg
+        .selectAll(".edge")
+        .data(graph.edges)
+        .enter()
+        .append(function(d) {
+            if (d.source !== d.target) {
+              return document.createElementNS("http://www.w3.org/2000/svg", "path");
+            } else {
+              return document.createElementNS("http://www.w3.org/2000/svg", "path");
+            }
+          })
+        .classed("edge", true)
+        .attr("stroke", "black")
+        .attr("stroke-width", 2)
+        .attr("d", function(d) {
+            const sourceNode = graph.nodes.find(node => node.index === d.source);
+            const targetNode = graph.nodes.find(node => node.index === d.target);
+            if (sourceNode.index === targetNode.index) {
+                const startPointAngle = 5 * Math.PI / 4; // ? degrees
+                const endPointAngle = 7 * Math.PI / 4; // 315 degrees
+                const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
+                const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
+                const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
+                return `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
+            } else {
+                return `M ${sourceNode.x},${sourceNode.y} L ${targetNode.x*0.8},${targetNode.y*0.8}`;
+            }
+        })
+        .attr("marker-end", d => graph.isDirected && d.source !== d.target ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
+
 
     const node = svg
         .selectAll(".node")
