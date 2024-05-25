@@ -1,7 +1,16 @@
+export enum Color {
+  WHITE = "WHITE",
+  GRAY = "GRAY",
+  BLACK = "BLACK"
+}
+
 export interface Node {
   index: number;
   x: number;
   y: number;
+  color: Color;
+  d: number;
+  pred: number; 
 }
 
 export interface Edge {
@@ -22,7 +31,7 @@ export class Graph {
 
   addNode(x: number, y: number): void {
     const smallestUnusedIndex = this.findSmallestUnusedIndex();
-    const newNode = { index: smallestUnusedIndex, x, y };
+    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1};
     this.nodes.push(newNode);
   }
 
