@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import { Graph } from './graph';
 import { renderGraph } from './renderer';
-import { printGraph } from './algorithm'
 
 // Create a new graph instance
 const graph = new Graph();
@@ -40,25 +39,3 @@ renderGraph(graph, svg);
 
 // Add SVG to the DOM
 document.getElementById("graph-container").appendChild(svg.node());
-
-// Event listener for the run algorithm button
-document.getElementById("run-algorithm").addEventListener("click", () => {
-    const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
-    const selectedAlgorithm = algorithmSelect.value;
-
-    let algorithmFunction;
-    switch (selectedAlgorithm) {
-        case "print":
-            algorithmFunction = printGraph;
-            break;
-        // Add cases for other algorithms as needed
-        default:
-            return;
-    }
-
-    // Perform algorithm on current graph state
-    algorithmFunction(graph, svg);
-
-    // Redraw the graph to reflect algorithm changes
-    renderGraph(graph, svg);
-});
