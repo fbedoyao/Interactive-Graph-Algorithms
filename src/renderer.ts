@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, printNodeIndex } from './utils';
+import { printGraph } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -48,6 +49,27 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             maxY: 483
         };
     }
+
+    function updateArrowheadColor() {
+        const marker = defs.select("#arrowhead");
+    
+        if (marker.empty()) {
+            defs.append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 10)
+                .attr("refY", 0)
+                .attr("markerWidth", 5)
+                .attr("markerHeight", 5)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M 0,-5 L 10,0 L 0,5")
+                .attr("fill", deletingEdgesEnabled ? "red" : "black");
+        } else {
+            marker.select("path").attr("fill", deletingEdgesEnabled ? "red" : "black");
+        }
+    }
+    
 
     function updateEdgePositions(edgesSVGElement) {
         if (graph.edges.length > 0) {
@@ -146,6 +168,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
         const mergedEdges = newEdgePaths.merge(updatedEdges);
         updateEdgePositions(mergedEdges);
+        updateArrowheadColor();
         mergedEdges.lower();
 
         const updatedNodes = svg
@@ -190,6 +213,30 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("delete-node").addEventListener("click", () => toggleDeleteNodeMode());
         document.getElementById("delete-edge").addEventListener("click", () => toggleDeleteEdgeMode());
         document.getElementById("delete-graph").addEventListener("click", () => deleteAllNodesAndEdges());
+        document.getElementById("change-graph-type").addEventListener("click", () => changeGraphType());
+        document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
+    }
+
+    function changeGraphType() {
+        console.log("Called changeGraphType");
+        const changeGraphTypeButton = document.getElementById("change-graph-type");
+        if (graph.isDirected){
+            console.log("Graph is directed");
+            graph.edges.forEach(e => {
+                const source = e.source;
+                const target = e.target;
+                if (e.source === e.target) {
+                    graph.deleteEdge(source, target);
+                }
+            });
+            graph.isDirected = false;
+            changeGraphTypeButton.textContent = "Make Directed";
+        } else {
+            console.log("Graph is undirected");
+            graph.isDirected = true;
+            changeGraphTypeButton.textContent = "Make Undirected";
+        }
+        redrawGraph();
     }
 
     function toggleAddNodeMode() {
@@ -258,6 +305,27 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         redrawGraph();
     }
 
+    function runAlgorithm(){
+        const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
+        const selectedAlgorithm = algorithmSelect.value;
+
+        let algorithmFunction;
+        switch (selectedAlgorithm) {
+            case "print":
+                algorithmFunction = printGraph;
+                break;
+            // Add cases for other algorithms as needed
+            default:
+                return;
+        }
+
+        // Perform algorithm on current graph state
+        algorithmFunction(graph, svg);
+
+        // Redraw the graph to reflect algorithm changes
+        redrawGraph();
+    }
+
     // Self - loops
     function getFixedPointOnCircle(cx, cy, radius, angle) {
         return {
@@ -292,19 +360,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .attr("orient", "auto")
         .append("path")
         .attr("d", "M 0,-5 L 10,0 L 0,5")
-        .attr("fill", "#000");
-
-    /*
-    const edge = svg
-        .selectAll(".edge")
-        .data(graph.edges)
-        .enter()
-        .append("line")
-        .classed("edge", true)
-        .attr("stroke", "black")
-        .attr("stroke-width", 2)
-        .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
-    */
+        .attr("fill", "black");
 
     const edge = svg
         .selectAll(".edge")
