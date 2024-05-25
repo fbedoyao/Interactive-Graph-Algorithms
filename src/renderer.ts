@@ -50,6 +50,27 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         };
     }
 
+    function updateArrowheadColor() {
+        const marker = defs.select("#arrowhead");
+    
+        if (marker.empty()) {
+            defs.append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 10)
+                .attr("refY", 0)
+                .attr("markerWidth", 5)
+                .attr("markerHeight", 5)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M 0,-5 L 10,0 L 0,5")
+                .attr("fill", deletingEdgesEnabled ? "red" : "black");
+        } else {
+            marker.select("path").attr("fill", deletingEdgesEnabled ? "red" : "black");
+        }
+    }
+    
+
     function updateEdgePositions(edgesSVGElement) {
         if (graph.edges.length > 0) {
             edgesSVGElement.attr("d", function(d) {
@@ -147,6 +168,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
         const mergedEdges = newEdgePaths.merge(updatedEdges);
         updateEdgePositions(mergedEdges);
+        updateArrowheadColor();
         mergedEdges.lower();
 
         const updatedNodes = svg
@@ -338,7 +360,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .attr("orient", "auto")
         .append("path")
         .attr("d", "M 0,-5 L 10,0 L 0,5")
-        .attr("fill", "#000");
+        .attr("fill", "black");
 
     const edge = svg
         .selectAll(".edge")
