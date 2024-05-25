@@ -16,12 +16,20 @@ export function printNodeIndex(e: MouseEvent, d: Node) {
 
 
 export function deactivateAllButtonsExcept(buttonId: string){
-    const buttons = document.querySelectorAll<HTMLButtonElement>("#toolbar button"); // Narrow down the type to HTMLButtonElement
-    buttons.forEach(button => {
+    const toolBarButtons = document.querySelectorAll<HTMLButtonElement>("#toolbar button"); // Narrow down the type to HTMLButtonElement
+    toolBarButtons.forEach(button => {
         if (button.id !== buttonId) {
             button.disabled = true;
         }
     });
+    // Also, disable the "Run Algorithm" button
+    const runAlgorithmButton = document.getElementById("run-algorithm") as HTMLButtonElement;
+    if (runAlgorithmButton) {
+        runAlgorithmButton.disabled = true;
+        runAlgorithmButton.classList.add("disabled-button");
+    } else {
+        console.log("Run Algorithm button not found");
+    }
 }
 
 export function enableAllButtons(){
@@ -29,4 +37,13 @@ export function enableAllButtons(){
     buttons.forEach(button => {
         button.disabled = false;
     });
+
+    // Also, disable the "Run Algorithm" button
+    const runAlgorithmButton = document.getElementById("run-algorithm") as HTMLButtonElement;
+    if (runAlgorithmButton) {
+        runAlgorithmButton.disabled = false;
+        runAlgorithmButton.classList.remove("disabled-button");
+    } else {
+        console.log("Run Algorithm button not found");
+    }
 }

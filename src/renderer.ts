@@ -192,6 +192,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("delete-edge").addEventListener("click", () => toggleDeleteEdgeMode());
         document.getElementById("delete-graph").addEventListener("click", () => deleteAllNodesAndEdges());
         document.getElementById("change-graph-type").addEventListener("click", () => changeGraphType());
+        document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
     }
 
     function changeGraphType() {
@@ -279,6 +280,27 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             enableAllButtons();
             deleteEdgesButton.classList.remove("active");
         }
+        redrawGraph();
+    }
+
+    function runAlgorithm(){
+        const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
+        const selectedAlgorithm = algorithmSelect.value;
+
+        let algorithmFunction;
+        switch (selectedAlgorithm) {
+            case "print":
+                algorithmFunction = printGraph;
+                break;
+            // Add cases for other algorithms as needed
+            default:
+                return;
+        }
+
+        // Perform algorithm on current graph state
+        algorithmFunction(graph, svg);
+
+        // Redraw the graph to reflect algorithm changes
         redrawGraph();
     }
 
@@ -373,28 +395,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .on("end", dragended);
 
     node.call(drag);
-
-    // Event listener for the run algorithm button
-    document.getElementById("run-algorithm").addEventListener("click", () => {
-        const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
-        const selectedAlgorithm = algorithmSelect.value;
-
-        let algorithmFunction;
-        switch (selectedAlgorithm) {
-            case "print":
-                algorithmFunction = printGraph;
-                break;
-            // Add cases for other algorithms as needed
-            default:
-                return;
-        }
-
-        // Perform algorithm on current graph state
-        algorithmFunction(graph, svg);
-
-        // Redraw the graph to reflect algorithm changes
-        redrawGraph();
-    });
 
     setupEventListeners();
     addEventListenerToSelection<SVGGElement, Node>(node, "click", handleNodeClick);
