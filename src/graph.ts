@@ -95,13 +95,14 @@ export class Graph {
     );
   }
 
-  private getNodeByIndex(nodeIndex: number): Node {
+  getNodeByIndex(nodeIndex: number): Node {
+    let node = null;
     this.nodes.forEach(currNode => {
       if (nodeIndex === currNode.index){
-        return currNode;
+        node = currNode;
       }
-    })
-    return null;
+    });
+    return node;
   }
 
   getAdjacencyList(): Map<number, number[]> {

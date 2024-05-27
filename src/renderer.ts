@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, printNodeIndex } from './utils';
-import { printGraph } from './algorithm'
+import { breadthFirstSearch, printGraph } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -313,6 +313,11 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         switch (selectedAlgorithm) {
             case "print":
                 algorithmFunction = printGraph;
+                algorithmFunction(graph);
+                break;
+            case "bfs":
+                algorithmFunction = breadthFirstSearch;
+                algorithmFunction(graph, 0);
                 break;
             // Add cases for other algorithms as needed
             default:
@@ -320,7 +325,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         }
 
         // Perform algorithm on current graph state
-        algorithmFunction(graph, svg);
+        // algorithmFunction(graph, svg);
 
         // Redraw the graph to reflect algorithm changes
         redrawGraph();

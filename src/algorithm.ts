@@ -2,7 +2,7 @@ import { Graph, Node, Color } from './graph';
 import { renderGraph } from './renderer';
 import { Queue } from './queue'
 
-export function printGraph(graph: Graph, svg: SVGSVGElement){
+export function printGraph(graph: Graph){
     const adjList = graph.getAdjacencyList();
     const outputBox = document.getElementById("output-box");
 
@@ -15,13 +15,13 @@ export function printGraph(graph: Graph, svg: SVGSVGElement){
     }
 }
 
-export function breadthFirstSearch(graph: Graph, s: Node, svg: SVGElement){
+export function breadthFirstSearch(graph: Graph, s_index: number){
     const adjList = graph.getAdjacencyList();
     const V = graph.nodes;
 
-
     // Initialization
-    graph.nodes.forEach(u => {
+    const s = graph.getNodeByIndex(s_index);
+    V.forEach(u => {
         if (u.index !== s.index) {
             u.color = Color.WHITE;
             u.d = Number.MAX_VALUE;
@@ -35,15 +35,18 @@ export function breadthFirstSearch(graph: Graph, s: Node, svg: SVGElement){
     Q.enqueue(s.index);
     while (!Q.isEmpty()){
         const u_index = Q.dequeue();
-        const u = this.getNodeByIndex(u_index);
-        graph.nodes.forEach(v => {
+        const u = graph.getNodeByIndex(u_index);
+        const adjNodes = adjList.get(u_index);
+        adjNodes.forEach(v_index => {
+            const v = graph.getNodeByIndex(v_index);
             if (v.color === Color.WHITE){
                 v.color = Color.GRAY;
                 v.d = u.d + 1;
-                v.pred = u;
+                v.pred = u_index;
                 Q.enqueue(v.index);
             }
         })
         u.color = Color.BLACK;
     }
+    console.log("End of BFS");
 }
