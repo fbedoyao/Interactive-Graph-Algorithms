@@ -95,6 +95,15 @@ export class Graph {
     );
   }
 
+  private getNodeByIndex(nodeIndex: number): Node {
+    this.nodes.forEach(currNode => {
+      if (nodeIndex === currNode.index){
+        return currNode;
+      }
+    })
+    return null;
+  }
+
   getAdjacencyList(): Map<number, number[]> {
     const adjacencyList = new Map<number, number[]>();
 

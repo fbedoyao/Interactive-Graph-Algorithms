@@ -31,10 +31,19 @@ export function breadthFirstSearch(graph: Graph, s: Node, svg: SVGElement){
     s.color = Color.GRAY;
     s.d = 0;
     s.pred = -1;
-    const Q = new Queue<Node>();
-    Q.enqueue(s);
+    const Q = new Queue<number>();
+    Q.enqueue(s.index);
     while (!Q.isEmpty()){
-        // Main loop logica
-        // Might need to change the adjacency list so that it maps Node to Node[]
+        const u_index = Q.dequeue();
+        const u = this.getNodeByIndex(u_index);
+        graph.nodes.forEach(v => {
+            if (v.color === Color.WHITE){
+                v.color = Color.GRAY;
+                v.d = u.d + 1;
+                v.pred = u;
+                Q.enqueue(v.index);
+            }
+        })
+        u.color = Color.BLACK;
     }
 }
