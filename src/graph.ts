@@ -1,7 +1,7 @@
 export enum Color {
-  WHITE = "WHITE",
-  GRAY = "GRAY",
-  BLACK = "BLACK"
+  WHITE = "white",
+  GRAY = "#ccc",
+  BLACK = "black"
 }
 
 export interface Node {

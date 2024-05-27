@@ -21,8 +21,8 @@ header h1 {
 
 .node {
     cursor: pointer;
-    fill: #ccc;
-    stroke: #000;
+    fill: white;
+    stroke: black;
     stroke-width: 1.5px;
     transition: stroke-width 0.3s, stroke 0.3s;
 }

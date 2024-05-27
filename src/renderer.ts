@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { Graph, Node, Edge } from './graph';
+import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, printNodeIndex } from './utils';
-import { breadthFirstSearch, printGraph } from './algorithm'
+import { breadthFirstSearch, breadthFirstSearchAsync, printGraph } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -182,15 +182,30 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("transform", d => `translate(${d.x}, ${d.y})`);
         newNodeGroups
             .append("circle")
-            .attr("r", 15);
+            .attr("r", 15)
+            .attr("fill", d => d.color)  // Set the fill attribute based on the condition
+
         newNodeGroups
             .append("text")
+            .attr("stroke", d => {
+                console.log(`Updating stroke for node ${d.index} to ${d.color === Color.BLACK ? "white" : "black"}`);
+                return d.color === Color.BLACK ? "white" : "black";
+            })
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "middle")
             .text(d => d.index);
         const mergedNodes = newNodeGroups.merge(updatedNodes);
         mergedNodes
             .attr("transform", d => `translate(${d.x}, ${d.y})`)
+            .select("circle")
+            .attr("fill", d => d.color);  // Update the fill attribute for existing nodes
+        mergedNodes
+            .select("text")
+            .attr("stroke", d => {
+                console.log(`Updating stroke for node ${d.index} to ${d.color === Color.BLACK ? "white" : "black"}`);
+                return d.color === Color.BLACK ? "white" : "black";
+            })
+        mergedNodes
             .call(drag);
         addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", handleNodeClick);
         addEventListenerToSelection<SVGPathElement, Edge>(mergedEdges, "click", handleEdgeClick);
@@ -316,8 +331,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 algorithmFunction(graph);
                 break;
             case "bfs":
-                algorithmFunction = breadthFirstSearch;
-                algorithmFunction(graph, 0);
+                algorithmFunction = breadthFirstSearchAsync;
+                algorithmFunction(graph, 0, redrawGraph);
                 break;
             // Add cases for other algorithms as needed
             default:
