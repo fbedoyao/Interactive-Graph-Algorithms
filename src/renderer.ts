@@ -140,7 +140,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 console.log(graph);
             }
         } else {
-            console.log("Clicked on node " + d.index);
+            console.log(d);
         }
     }
 
