@@ -87,14 +87,19 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                         const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
                         return `M ${startPoint.x},${startPoint.y} Q ${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
                     } else {
-                        // Regular path (shortened line)
-                        const dx = targetNode.x - sourceNode.x;
-                        const dy = targetNode.y - sourceNode.y;
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        const shortenLength = 15; // Adjust to shorten or lengthen the lines
-                        const newX = sourceNode.x + (dx / length) * (length - shortenLength);
-                        const newY = sourceNode.y + (dy / length) * (length - shortenLength);
-                        return `M ${sourceNode.x},${sourceNode.y} L ${newX},${newY}`;
+                        
+                        if(graph.edgeExists(d.target, d.source)){
+                            return curvedPath(d);
+                        } else {
+                            // Regular path (shortened line)
+                            const dx = targetNode.x - sourceNode.x;
+                            const dy = targetNode.y - sourceNode.y;
+                            const length = Math.sqrt(dx * dx + dy * dy);
+                            const shortenLength = 15; // Adjust to shorten or lengthen the lines
+                            const newX = sourceNode.x + (dx / length) * (length - shortenLength);
+                            const newY = sourceNode.y + (dy / length) * (length - shortenLength);
+                            return `M ${sourceNode.x},${sourceNode.y} L ${newX},${newY}`;
+                        }
                     }
                 } else {
                     // Handle case where sourceNode or targetNode is undefined
@@ -187,10 +192,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
         newNodeGroups
             .append("text")
-            .attr("stroke", d => {
-                console.log(`Updating stroke for node ${d.index} to ${d.color === Color.BLACK ? "white" : "black"}`);
-                return d.color === Color.BLACK ? "white" : "black";
-            })
+            .attr("stroke", d => d.color === Color.BLACK ? "white" : "black")
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "middle")
             .text(d => d.index);
@@ -201,10 +203,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("fill", d => d.color);  // Update the fill attribute for existing nodes
         mergedNodes
             .select("text")
-            .attr("stroke", d => {
-                console.log(`Updating stroke for node ${d.index} to ${d.color === Color.BLACK ? "white" : "black"}`);
-                return d.color === Color.BLACK ? "white" : "black";
-            })
+            .attr("stroke", d => d.color === Color.BLACK ? "white" : "black");
+
         mergedNodes
             .call(drag);
         addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", handleNodeClick);
@@ -365,6 +365,31 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         };
     }
 
+    // Function to calculate path with curvature
+    function curvedPath(d) {
+        const source = graph.getNodeByIndex(d.source);
+        const target = graph.getNodeByIndex(d.target);
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        /*
+        const curvature = 0.2; // Adjust curvature here
+        const offsetX = dy * curvature;
+        const offsetY = -dx * curvature;
+        return `M${source.x},${source.y} Q${(source.x + target.x) / 2 + offsetX},${(source.y + target.y) / 2 + offsetY} ${target.x},${target.y}`;
+        */
+        const offset = 15; // Adjust this value to shorten the path
+        const shortenFactor = offset / dr;
+        const sx = source.x + dx * shortenFactor;
+        const sy = source.y + dy * shortenFactor;
+        const tx = target.x - dx * shortenFactor;
+        const ty = target.y - dy * shortenFactor;
+        const curvature = 0.2; // Adjust curvature here
+        const offsetX = dy * curvature;
+        const offsetY = -dx * curvature;
+        return `M${sx},${sy} Q${(sx + tx) / 2 + offsetX},${(sy + ty) / 2 + offsetY} ${tx},${ty}`;
+    }
+
     // Main execution starts here
 
     const defs = svg.append("defs");
@@ -407,6 +432,9 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
                 return `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
             } else {
+                if(graph.edgeExists(d.target, d.source)){
+                    return curvedPath(d);
+                }
                 return `M ${sourceNode.x},${sourceNode.y} L ${targetNode.x*0.8},${targetNode.y*0.8}`;
             }
         })

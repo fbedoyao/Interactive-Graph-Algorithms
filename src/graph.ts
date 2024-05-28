@@ -89,7 +89,7 @@ export class Graph {
     return smallestUnusedIndex;
   }
 
-  private edgeExists(source: number, target: number): boolean {
+  edgeExists(source: number, target: number): boolean {
     return this.edges.some(
       edge => edge.source === source && edge.target === target
     );

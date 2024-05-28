@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Graph Visualizer</title>
+    <style>
+        .node circle {
+            fill: lightblue;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2px;
+        }
+
+        .arrow {
+            fill: #999;
+        }
+    </style>
+</head>
+<body>
+    <svg width="600" height="400"></svg>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script>
+        // Define the width and height of the SVG
+        const width = 600;
+        const height = 400;
+
+        // Create an SVG element
+        const svg = d3.select('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Define the nodes with fixed positions
+        const nodes = [
+            { id: 'A', x: 100, y: 300 },
+            { id: 'B', x: 400, y: 200 }
+        ];
+
+        // Define the links (directed edges)
+        const links = [
+            { source: nodes[0], target: nodes[1] },
+            { source: nodes[1], target: nodes[0] }
+        ];
+
+        // Define arrow markers
+        svg.append('defs').selectAll('marker')
+            .data(['end'])
+            .enter().append('marker')
+            .attr('id', 'arrow')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 15)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('class', 'arrow');
+
+        // Add links
+        const link = svg.append('g')
+            .attr('class', 'links')
+            .selectAll('path')
+            .data(links)
+            .enter().append('path')
+            .attr('class', 'link')
+            .attr('marker-end', 'url(#arrow)')
+            .attr('d', curvedPath);
+
+        // Add nodes
+        const node = svg.append('g')
+            .attr('class', 'nodes')
+            .selectAll('circle')
+            .data(nodes)
+            .enter().append('circle')
+            .attr('r', 10)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y);
+
+        function curvedPath(d) {
+            const source = d.source;
+            const target = d.target;
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const dr = Math.sqrt(dx * dx + dy * dy);
+            const offset = 20; // Adjust this value to shorten the path
+            const shortenFactor = offset / dr;
+            const sx = source.x + dx * shortenFactor;
+            const sy = source.y + dy * shortenFactor;
+            const tx = target.x - dx * shortenFactor;
+            const ty = target.y - dy * shortenFactor;
+            const curvature = 0.2; // Adjust curvature here
+            const offsetX = dy * curvature;
+            const offsetY = -dx * curvature;
+            return `M${sx},${sy} Q${(sx + tx) / 2 + offsetX},${(sy + ty) / 2 + offsetY} ${tx},${ty}`;
+        }
+    </script>
+</body>
+</html>
