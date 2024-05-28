@@ -236,18 +236,23 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         console.log("Called changeGraphType");
         const changeGraphTypeButton = document.getElementById("change-graph-type");
         if (graph.isDirected){
-            console.log("Graph is directed");
+            console.log("Change from directed to undirected");
             graph.edges.forEach(e => {
                 const source = e.source;
                 const target = e.target;
                 if (e.source === e.target) {
+                    //  Delete Self-loops
+                    graph.deleteEdge(source, target);
+                }
+                if (graph.edgeExists(target, source)){
+                    // Delete repeated edges (eg 0,2 and 2,0)
                     graph.deleteEdge(source, target);
                 }
             });
             graph.isDirected = false;
             changeGraphTypeButton.textContent = "Make Directed";
         } else {
-            console.log("Graph is undirected");
+            console.log("Change from undirected to directed");
             graph.isDirected = true;
             changeGraphTypeButton.textContent = "Make Undirected";
         }
