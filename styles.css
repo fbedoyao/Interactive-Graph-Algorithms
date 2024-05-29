@@ -43,6 +43,10 @@ header h1 {
     fill: none;
 }
 
+.edge-label {
+    cursor: pointer;
+}
+
 .edge.deletion-active {
     stroke: red;
     stroke-width: 4px;
