@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
-import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, printNodeIndex } from './utils';
+import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState } from './utils';
 import { breadthFirstSearch, breadthFirstSearchAsync, printGraph } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
@@ -345,6 +345,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function runAlgorithm(){
+        resetNodesState(graph);
+        redrawGraph();
         const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
         const selectedAlgorithm = algorithmSelect.value;
 
