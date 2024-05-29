@@ -12,6 +12,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     let addingEdgesEnabled = false;
     let sourceNode = null;
 
+    // DOM Elements
+    const algorithmSelect = document.getElementById('algorithm-select') as HTMLSelectElement;
+    const sourceNodeContainer = document.getElementById('source-node-container');
+    const sourceNodeSelect = document.getElementById('source-node-select') as HTMLSelectElement;
+    const runButton = document.getElementById('run-algorithm') as HTMLButtonElement;
+
     // Functions to handle drag events
     function dragstarted(event, d) {
         if (draggingEnabled) {
@@ -230,6 +236,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("delete-graph").addEventListener("click", () => deleteAllNodesAndEdges());
         document.getElementById("change-graph-type").addEventListener("click", () => changeGraphType());
         document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
+        algorithmSelect.addEventListener("change", () => handleAlgorithmChange());
+        sourceNodeSelect.addEventListener("change", () => handleSourceNodeSelectChange());
     }
 
     function changeGraphType() {
@@ -257,6 +265,17 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             changeGraphTypeButton.textContent = "Make Undirected";
         }
         redrawGraph();
+    }
+
+    function handleSourceNodeSelectChange(){
+        const selectedValue = sourceNodeSelect.value;
+        console.log("Selected node:", selectedValue);
+
+        // Enable the run button if a node is selected
+        if (!selectedValue){
+            sourceNodeSelect.value = '0';
+        }
+        runButton.disabled = false;
     }
 
     function toggleAddNodeMode() {
@@ -337,7 +356,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 break;
             case "bfs":
                 algorithmFunction = breadthFirstSearchAsync;
-                algorithmFunction(graph, 0, redrawGraph);
+                algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph);
                 break;
             // Add cases for other algorithms as needed
             default:
@@ -349,6 +368,27 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
         // Redraw the graph to reflect algorithm changes
         redrawGraph();
+    }
+
+    function handleAlgorithmChange(){
+        if (algorithmSelect.value === 'bfs') {
+            sourceNodeContainer.style.display = 'block';
+            populateSourceNodeSelector();
+        } else {
+            sourceNodeContainer.style.display = 'none';
+            runButton.disabled = false; // Enable the run button for other algorithms
+        }
+    }
+
+    // Function to populate the source node selector
+    function populateSourceNodeSelector() {
+        sourceNodeSelect.innerHTML = ''; // Clear existing options
+        graph.nodes.forEach( node => {
+            const option = document.createElement('option');
+            option.value = node.index.toString();
+            option.textContent = `Node ${node.index}`;
+            sourceNodeSelect.appendChild(option);
+        });
     }
 
     // Self - loops
