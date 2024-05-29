@@ -23,11 +23,13 @@ export class Graph {
   nodes: Node[];
   edges: Edge[];
   isDirected: boolean;
+  isWeighted: boolean;
 
   constructor() {
       this.nodes = [];
       this.edges = [];
       this.isDirected = false;
+      this.isWeighted = false;
   }
 
   addNode(x: number, y: number): void {

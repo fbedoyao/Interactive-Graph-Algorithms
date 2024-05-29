@@ -301,13 +301,18 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("fill", "black") // Set initial color
             .on("mouseover", handleEdgeLabelHover)
             .on("mouseout", handleEdgeLabelMouseOut)
-            .on("click", handleEdgeLabelClick); // Add click event
+            .on("click", handleEdgeLabelClick) // Add click event
+            .style("visibility", graph.isWeighted ? "visible" : "hidden"); // Conditionally set visibility
+
+
     
         const mergedEdgeLabels = newEdgeLabels.merge(updatedEdgeLabels);
         updateEdgeLabelsPositions(mergedEdgeLabels);
 
         // Ensure the text of the edge labels is updated
         mergedEdgeLabels.text(d => d.w);
+        mergedEdgeLabels.style("visibility", graph.isWeighted ? "visible" : "hidden"); // Conditionally set visibility
+
     
         const updatedNodes = svg
             .selectAll<SVGGElement, Node>(".node")
@@ -367,6 +372,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         algorithmSelect.addEventListener("change", () => handleAlgorithmChange());
         sourceNodeSelect.addEventListener("change", () => handleSourceNodeSelectChange());
         updateWeightButton.addEventListener("click", () => handleClickUpdateWeightButton());
+        document.getElementById("change-graph-is-weighted").addEventListener("click", () => changeGraphIsWeighted());
     }
 
     // Function to calculate midpoint of a quadratic Bézier curve
@@ -400,6 +406,22 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             x: (dx / length) * offset,
             y: (dy / length) * offset
         };
+    }
+
+    function changeGraphIsWeighted(){
+        console.log("Called changeGraphIsWeighted");
+        const changeGraphIsWeightedButton = document.getElementById("change-graph-is-weighted");
+        if (graph.isWeighted){
+            console.log("Change from weighted to unweighted");
+
+            graph.isWeighted = false;
+            changeGraphIsWeightedButton.textContent = "Make Weighted"
+        } else {
+            console.log("Change from unweighted to weighted");
+            graph.isWeighted = true;
+            changeGraphIsWeightedButton.textContent = "Make Unweighted"
+        }
+        redrawGraph();
     }
 
     function changeGraphType() {
@@ -661,7 +683,9 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .text(d => d.w) // Default label text or format as needed
         .on("mouseover", handleEdgeLabelHover)
         .on("mouseout", handleEdgeLabelMouseOut)
-        .on("click", handleEdgeLabelClick); // Add click event
+        .on("click", handleEdgeLabelClick) // Add click event
+        .style("visibility", graph.isWeighted ? "visible" : "hidden"); // Conditionally set visibility
+
 
     const node = svg
         .selectAll(".node")

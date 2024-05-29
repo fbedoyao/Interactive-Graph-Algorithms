@@ -29,6 +29,7 @@ const dummyEdges = [
 graph.nodes = dummyNodes;
 graph.edges = dummyEdges;
 graph.isDirected = true;
+graph.isWeighted = true;
 
 const width = 1000;
 const height = Math.min(500, width * 0.6);
