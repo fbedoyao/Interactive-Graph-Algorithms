@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { Graph, Node, Edge } from './graph';
+import { Graph, Node, Edge, Color } from './graph';
 
 
 export function addEventListenerToSelection<T extends d3.BaseType, D>(
@@ -46,4 +46,12 @@ export function enableAllButtons(){
     } else {
         console.log("Run Algorithm button not found");
     }
+}
+
+export function resetNodesState(graph: Graph){
+    graph.nodes.forEach(function(node){
+        node.color = Color.WHITE;
+        node.d = Number.MAX_VALUE;
+        node.pred = -1;
+    })
 }

@@ -1,7 +1,16 @@
+export enum Color {
+  WHITE = "white",
+  GRAY = "#ccc",
+  BLACK = "black"
+}
+
 export interface Node {
   index: number;
   x: number;
   y: number;
+  color: Color;
+  d: number;
+  pred: number; 
 }
 
 export interface Edge {
@@ -22,7 +31,7 @@ export class Graph {
 
   addNode(x: number, y: number): void {
     const smallestUnusedIndex = this.findSmallestUnusedIndex();
-    const newNode = { index: smallestUnusedIndex, x, y };
+    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1};
     this.nodes.push(newNode);
   }
 
@@ -80,10 +89,20 @@ export class Graph {
     return smallestUnusedIndex;
   }
 
-  private edgeExists(source: number, target: number): boolean {
+  edgeExists(source: number, target: number): boolean {
     return this.edges.some(
       edge => edge.source === source && edge.target === target
     );
+  }
+
+  getNodeByIndex(nodeIndex: number): Node {
+    let node = null;
+    this.nodes.forEach(currNode => {
+      if (nodeIndex === currNode.index){
+        node = currNode;
+      }
+    });
+    return node;
   }
 
   getAdjacencyList(): Map<number, number[]> {

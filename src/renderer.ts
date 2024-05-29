@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { Graph, Node, Edge } from './graph';
-import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, printNodeIndex } from './utils';
-import { printGraph } from './algorithm'
+import { Graph, Node, Edge, Color } from './graph';
+import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState } from './utils';
+import { breadthFirstSearch, breadthFirstSearchAsync, printGraph } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -11,6 +11,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     let deletingNodesEnabled = false;
     let addingEdgesEnabled = false;
     let sourceNode = null;
+
+    // DOM Elements
+    const algorithmSelect = document.getElementById('algorithm-select') as HTMLSelectElement;
+    const sourceNodeContainer = document.getElementById('source-node-container');
+    const sourceNodeSelect = document.getElementById('source-node-select') as HTMLSelectElement;
+    const runButton = document.getElementById('run-algorithm') as HTMLButtonElement;
 
     // Functions to handle drag events
     function dragstarted(event, d) {
@@ -87,14 +93,19 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                         const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
                         return `M ${startPoint.x},${startPoint.y} Q ${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
                     } else {
-                        // Regular path (shortened line)
-                        const dx = targetNode.x - sourceNode.x;
-                        const dy = targetNode.y - sourceNode.y;
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        const shortenLength = 15; // Adjust to shorten or lengthen the lines
-                        const newX = sourceNode.x + (dx / length) * (length - shortenLength);
-                        const newY = sourceNode.y + (dy / length) * (length - shortenLength);
-                        return `M ${sourceNode.x},${sourceNode.y} L ${newX},${newY}`;
+                        
+                        if(graph.edgeExists(d.target, d.source)){
+                            return curvedPath(d);
+                        } else {
+                            // Regular path (shortened line)
+                            const dx = targetNode.x - sourceNode.x;
+                            const dy = targetNode.y - sourceNode.y;
+                            const length = Math.sqrt(dx * dx + dy * dy);
+                            const shortenLength = 15; // Adjust to shorten or lengthen the lines
+                            const newX = sourceNode.x + (dx / length) * (length - shortenLength);
+                            const newY = sourceNode.y + (dy / length) * (length - shortenLength);
+                            return `M ${sourceNode.x},${sourceNode.y} L ${newX},${newY}`;
+                        }
                     }
                 } else {
                     // Handle case where sourceNode or targetNode is undefined
@@ -140,7 +151,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 console.log(graph);
             }
         } else {
-            console.log("Clicked on node " + d.index);
+            console.log(d);
         }
     }
 
@@ -182,15 +193,25 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("transform", d => `translate(${d.x}, ${d.y})`);
         newNodeGroups
             .append("circle")
-            .attr("r", 15);
+            .attr("r", 15)
+            .attr("fill", d => d.color)  // Set the fill attribute based on the condition
+
         newNodeGroups
             .append("text")
+            .attr("stroke", d => d.color === Color.BLACK ? "white" : "black")
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "middle")
             .text(d => d.index);
         const mergedNodes = newNodeGroups.merge(updatedNodes);
         mergedNodes
             .attr("transform", d => `translate(${d.x}, ${d.y})`)
+            .select("circle")
+            .attr("fill", d => d.color);  // Update the fill attribute for existing nodes
+        mergedNodes
+            .select("text")
+            .attr("stroke", d => d.color === Color.BLACK ? "white" : "black");
+
+        mergedNodes
             .call(drag);
         addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", handleNodeClick);
         addEventListenerToSelection<SVGPathElement, Edge>(mergedEdges, "click", handleEdgeClick);
@@ -215,28 +236,46 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("delete-graph").addEventListener("click", () => deleteAllNodesAndEdges());
         document.getElementById("change-graph-type").addEventListener("click", () => changeGraphType());
         document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
+        algorithmSelect.addEventListener("change", () => handleAlgorithmChange());
+        sourceNodeSelect.addEventListener("change", () => handleSourceNodeSelectChange());
     }
 
     function changeGraphType() {
         console.log("Called changeGraphType");
         const changeGraphTypeButton = document.getElementById("change-graph-type");
         if (graph.isDirected){
-            console.log("Graph is directed");
+            console.log("Change from directed to undirected");
             graph.edges.forEach(e => {
                 const source = e.source;
                 const target = e.target;
                 if (e.source === e.target) {
+                    //  Delete Self-loops
+                    graph.deleteEdge(source, target);
+                }
+                if (graph.edgeExists(target, source)){
+                    // Delete repeated edges (eg 0,2 and 2,0)
                     graph.deleteEdge(source, target);
                 }
             });
             graph.isDirected = false;
             changeGraphTypeButton.textContent = "Make Directed";
         } else {
-            console.log("Graph is undirected");
+            console.log("Change from undirected to directed");
             graph.isDirected = true;
             changeGraphTypeButton.textContent = "Make Undirected";
         }
         redrawGraph();
+    }
+
+    function handleSourceNodeSelectChange(){
+        const selectedValue = sourceNodeSelect.value;
+        console.log("Selected node:", selectedValue);
+
+        // Enable the run button if a node is selected
+        if (!selectedValue){
+            sourceNodeSelect.value = '0';
+        }
+        runButton.disabled = false;
     }
 
     function toggleAddNodeMode() {
@@ -306,6 +345,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function runAlgorithm(){
+        resetNodesState(graph);
+        redrawGraph();
         const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
         const selectedAlgorithm = algorithmSelect.value;
 
@@ -313,6 +354,11 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         switch (selectedAlgorithm) {
             case "print":
                 algorithmFunction = printGraph;
+                algorithmFunction(graph);
+                break;
+            case "bfs":
+                algorithmFunction = breadthFirstSearchAsync;
+                algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph);
                 break;
             // Add cases for other algorithms as needed
             default:
@@ -320,10 +366,31 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         }
 
         // Perform algorithm on current graph state
-        algorithmFunction(graph, svg);
+        // algorithmFunction(graph, svg);
 
         // Redraw the graph to reflect algorithm changes
         redrawGraph();
+    }
+
+    function handleAlgorithmChange(){
+        if (algorithmSelect.value === 'bfs') {
+            sourceNodeContainer.style.display = 'block';
+            populateSourceNodeSelector();
+        } else {
+            sourceNodeContainer.style.display = 'none';
+            runButton.disabled = false; // Enable the run button for other algorithms
+        }
+    }
+
+    // Function to populate the source node selector
+    function populateSourceNodeSelector() {
+        sourceNodeSelect.innerHTML = ''; // Clear existing options
+        graph.nodes.forEach( node => {
+            const option = document.createElement('option');
+            option.value = node.index.toString();
+            option.textContent = `Node ${node.index}`;
+            sourceNodeSelect.appendChild(option);
+        });
     }
 
     // Self - loops
@@ -343,6 +410,31 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             x: cx + dx * scale,
             y: cy + dy * scale
         };
+    }
+
+    // Function to calculate path with curvature
+    function curvedPath(d) {
+        const source = graph.getNodeByIndex(d.source);
+        const target = graph.getNodeByIndex(d.target);
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        /*
+        const curvature = 0.2; // Adjust curvature here
+        const offsetX = dy * curvature;
+        const offsetY = -dx * curvature;
+        return `M${source.x},${source.y} Q${(source.x + target.x) / 2 + offsetX},${(source.y + target.y) / 2 + offsetY} ${target.x},${target.y}`;
+        */
+        const offset = 15; // Adjust this value to shorten the path
+        const shortenFactor = offset / dr;
+        const sx = source.x + dx * shortenFactor;
+        const sy = source.y + dy * shortenFactor;
+        const tx = target.x - dx * shortenFactor;
+        const ty = target.y - dy * shortenFactor;
+        const curvature = 0.2; // Adjust curvature here
+        const offsetX = dy * curvature;
+        const offsetY = -dx * curvature;
+        return `M${sx},${sy} Q${(sx + tx) / 2 + offsetX},${(sy + ty) / 2 + offsetY} ${tx},${ty}`;
     }
 
     // Main execution starts here
@@ -387,6 +479,9 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
                 return `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
             } else {
+                if(graph.edgeExists(d.target, d.source)){
+                    return curvedPath(d);
+                }
                 return `M ${sourceNode.x},${sourceNode.y} L ${targetNode.x*0.8},${targetNode.y*0.8}`;
             }
         })
