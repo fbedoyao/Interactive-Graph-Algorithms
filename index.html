@@ -11,7 +11,17 @@
         <h1>Interactive Graph Algorithms</h1>
     </header>
     <main>
-        <div id="graph-container" role="region" aria-label="Graph Container" style="position: relative;"></div>
+        <div id="graph-container" role="region" aria-label="Graph Container" style="position: relative;">
+            <div id="updateWeightModal" class="modal">
+                <div class="modal-content">
+                  <span id="closeModal" class="close">&times;</span>
+                  <p>Enter new weight for the edge:</p>
+                  <input type="number" id="newWeightInput" step="any">
+                  <button id="updateWeightButton">Update</button>
+                  <button id="cancelButton">Cancel</button>
+                </div>
+            </div>
+        </div>
         <nav id="toolbar" aria-label="Graph Tools">
             <button id="drag-tool" type="button">Drag</button>
             <button id="delete-graph" type="button">Delete Graph</button>

@@ -11,12 +11,18 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     let deletingNodesEnabled = false;
     let addingEdgesEnabled = false;
     let sourceNode = null;
+    let selectedEdge = null;
 
     // DOM Elements
     const algorithmSelect = document.getElementById('algorithm-select') as HTMLSelectElement;
     const sourceNodeContainer = document.getElementById('source-node-container');
     const sourceNodeSelect = document.getElementById('source-node-select') as HTMLSelectElement;
     const runButton = document.getElementById('run-algorithm') as HTMLButtonElement;
+    const modal = document.getElementById("updateWeightModal") as HTMLDivElement;
+    const closeModal = document.getElementById("closeModal") as HTMLSpanElement;
+    const updateWeightButton = document.getElementById("updateWeightButton") as HTMLButtonElement;
+    const cancelButton = document.getElementById("cancelButton") as HTMLButtonElement;
+    const newWeightInput = document.getElementById("newWeightInput") as HTMLInputElement;
 
     // Functions to handle drag events
     function dragstarted(event, d) {
@@ -209,7 +215,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 console.log("source: " + d.index);
             } else {
                 console.log("target: " + d.index);
-                graph.addEdge(sourceNode, d.index);
+                graph.addEdge(sourceNode, d.index, 0);
                 sourceNode = null;
                 redrawGraph();
                 console.log(graph);
@@ -224,7 +230,42 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             graph.deleteEdge(d.source, d.target);
             redrawGraph();
         } else {
-            console.log("Click on edge " + "(" + d.source + ", " + d.target + ")");
+            console.log("Click on edge " + "(" + d.source + ", " + d.target + ") w =" + d.w);
+        }
+    }
+
+    function handleEdgeLabelHover(d, i) {
+        d3.select(this).attr("fill", "#ccc");
+    }
+    
+    function handleEdgeLabelMouseOut(d, i) {
+        d3.select(this).attr("fill", "black");
+    }
+    
+    function handleEdgeLabelClick(event, d) {
+        console.log("click on w(" + d.source + ", " + d.target + ") = " + d.w);
+        selectedEdge = d;
+        modal.style.display = "block";
+    }
+    
+    closeModal.onclick = function() {
+        modal.style.display = "none";
+        newWeightInput.value = "";
+    }
+    
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+        newWeightInput.value = "";
+    }
+
+    function handleClickUpdateWeightButton() {
+        const newWeight = parseInt(newWeightInput.value);
+        if (!isNaN(newWeight) && selectedEdge) {
+            selectedEdge.w = newWeight;
+            console.log("new w(" + selectedEdge.source + ", " + selectedEdge.target + ") = " + selectedEdge.w);
+            redrawGraph();
+            modal.style.display = "none";
+            newWeightInput.value = "";
         }
     }
 
@@ -253,10 +294,17 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "middle")
             .attr("id", d => `edge-label-${d.source}-${d.target}`)
-            .text(d => `0`); // Default label text or format as needed
+            .text(d => d.w) // Default label text or format as needed
+            .attr("fill", "black") // Set initial color
+            .on("mouseover", handleEdgeLabelHover)
+            .on("mouseout", handleEdgeLabelMouseOut)
+            .on("click", handleEdgeLabelClick); // Add click event
     
         const mergedEdgeLabels = newEdgeLabels.merge(updatedEdgeLabels);
         updateEdgeLabelsPositions(mergedEdgeLabels);
+
+        // Ensure the text of the edge labels is updated
+        mergedEdgeLabels.text(d => d.w);
     
         const updatedNodes = svg
             .selectAll<SVGGElement, Node>(".node")
@@ -291,6 +339,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .call(drag);
         addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", handleNodeClick);
         addEventListenerToSelection<SVGPathElement, Edge>(mergedEdges, "click", handleEdgeClick);
+        addEventListenerToSelection<SVGGElement, Edge>(edgeLabels, "click", handleEdgeLabelClick);
         applyDeletionClass(mergedNodes, deletingNodesEnabled);
         applyDeletionClass(mergedEdges, deletingEdgesEnabled);
     }
@@ -314,6 +363,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
         algorithmSelect.addEventListener("change", () => handleAlgorithmChange());
         sourceNodeSelect.addEventListener("change", () => handleSourceNodeSelectChange());
+        updateWeightButton.addEventListener("click", () => handleClickUpdateWeightButton());
     }
 
     // Function to calculate midpoint of a quadratic Bézier curve
@@ -605,7 +655,10 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .attr("text-anchor", "middle")
         .attr("alignment-baseline", "middle")
         .attr("id", d => `edge-label-${d.source}-${d.target}`)
-        .text(d => `0`); // Default label text or format as needed
+        .text(d => d.w) // Default label text or format as needed
+        .on("mouseover", handleEdgeLabelHover)
+        .on("mouseout", handleEdgeLabelMouseOut)
+        .on("click", handleEdgeLabelClick); // Add click event
 
     const node = svg
         .selectAll(".node")
@@ -635,6 +688,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     setupEventListeners();
     addEventListenerToSelection<SVGGElement, Node>(node, "click", handleNodeClick);
     addEventListenerToSelection<SVGGElement, Edge>(edge, "click", handleEdgeClick);
+    addEventListenerToSelection<SVGGElement, Edge>(edgeLabels, "click", handleEdgeLabelClick);
     updateEdgePositions(edge);
     updateEdgeLabelsPositions(edgeLabels);
 }
