@@ -216,11 +216,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             } else {
                 console.log("target: " + d.index);
                 graph.addEdge(sourceNode, d.index, 0);
-                selectedEdge = graph.edges.find(edge => edge.source === sourceNode && edge.target === d.index);
+                if (graph.isWeighted){
+                    selectedEdge = graph.edges.find(edge => edge.source === sourceNode && edge.target === d.index);
+                    modal.style.display = "block";
+                }
                 sourceNode = null;
                 redrawGraph();
-                console.log(graph);
-                modal.style.display = "block";
             }
         } else {
             console.log(d);
