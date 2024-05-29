@@ -216,9 +216,11 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             } else {
                 console.log("target: " + d.index);
                 graph.addEdge(sourceNode, d.index, 0);
+                selectedEdge = graph.edges.find(edge => edge.source === sourceNode && edge.target === d.index);
                 sourceNode = null;
                 redrawGraph();
                 console.log(graph);
+                modal.style.display = "block";
             }
         } else {
             console.log(d);
@@ -259,6 +261,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function handleClickUpdateWeightButton() {
+        console.log("click on update");
         const newWeight = parseInt(newWeightInput.value);
         if (!isNaN(newWeight) && selectedEdge) {
             selectedEdge.w = newWeight;
