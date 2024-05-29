@@ -11,12 +11,18 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     let deletingNodesEnabled = false;
     let addingEdgesEnabled = false;
     let sourceNode = null;
+    let selectedEdge = null;
 
     // DOM Elements
     const algorithmSelect = document.getElementById('algorithm-select') as HTMLSelectElement;
     const sourceNodeContainer = document.getElementById('source-node-container');
     const sourceNodeSelect = document.getElementById('source-node-select') as HTMLSelectElement;
     const runButton = document.getElementById('run-algorithm') as HTMLButtonElement;
+    const modal = document.getElementById("updateWeightModal") as HTMLDivElement;
+    const closeModal = document.getElementById("closeModal") as HTMLSpanElement;
+    const updateWeightButton = document.getElementById("updateWeightButton") as HTMLButtonElement;
+    const cancelButton = document.getElementById("cancelButton") as HTMLButtonElement;
+    const newWeightInput = document.getElementById("newWeightInput") as HTMLInputElement;
 
     // Functions to handle drag events
     function dragstarted(event, d) {
@@ -115,9 +121,73 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); 
         }
     }
-        
-    
 
+    // Update edge label positions
+    function updateEdgeLabelsPositions(edgeLabelsSVGElement) {
+        edgeLabelsSVGElement.attr("x", function(d) {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                if (sourceNode && targetNode) {
+                    if (sourceNode.index === targetNode.index) {
+                        // Self-looping path
+                        const startPointAngle = 5 * Math.PI / 4;
+                        const endPointAngle = 7 * Math.PI / 4;
+                        const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
+                        const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
+                        const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
+                        const midPoint = getMidPointOnQuadraticBezier(startPoint, controlPoint, endPoint);
+                        return midPoint.x;
+                    } else {
+                        if(graph.edgeExists(d.target, d.source)){
+                            // Two edges connecting two nodes
+                            const controlPoint = getQuadraticControlPoint(sourceNode, targetNode);
+                            const midPoint = getMidPointOnQuadraticBezier({x: sourceNode.x, y: sourceNode.y}, controlPoint, {x: targetNode.x, y: targetNode.y});
+                            const outwardOffset = getOutwardOffset(sourceNode, targetNode, controlPoint, -15);
+                            return midPoint.x + outwardOffset.x;
+                        } else {
+                            // Straight line
+                            const dx = targetNode.x - sourceNode.x;
+                            const dy = targetNode.y - sourceNode.y;
+                            const midX = (sourceNode.x + targetNode.x) / 2;
+                            const midY = (sourceNode.y + targetNode.y) / 2;
+                            return midX - (dy / Math.sqrt(dx * dx + dy * dy)) * 20;
+                        }
+                    }
+                }
+            })
+            .attr("y", function(d) {
+                const sourceNode = graph.nodes.find(node => node.index === d.source);
+                const targetNode = graph.nodes.find(node => node.index === d.target);
+                if (sourceNode && targetNode) {
+                    if (sourceNode.index === targetNode.index) {
+                        // Self-looping path
+                        const startPointAngle = 5 * Math.PI / 4;
+                        const endPointAngle = 7 * Math.PI / 4;
+                        const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
+                        const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
+                        const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
+                        const midPoint = getMidPointOnQuadraticBezier(startPoint, controlPoint, endPoint);
+                        return midPoint.y -10;
+                    } else {
+                        if(graph.edgeExists(d.target, d.source)){
+                            // Two edges connecting two nodes
+                            const controlPoint = getQuadraticControlPoint(sourceNode, targetNode);
+                            const midPoint = getMidPointOnQuadraticBezier({x: sourceNode.x, y: sourceNode.y}, controlPoint, {x: targetNode.x, y: targetNode.y});
+                            const outwardOffset = getOutwardOffset(sourceNode, targetNode, controlPoint, -15);
+                            return midPoint.y + outwardOffset.y;
+                        } else {
+                            // Straight line
+                            const dx = targetNode.x - sourceNode.x;
+                            const dy = targetNode.y - sourceNode.y;
+                            const midX = (sourceNode.x + targetNode.x) / 2;
+                            const midY = (sourceNode.y + targetNode.y) / 2;
+                            return midY + (dx / Math.sqrt(dx * dx + dy * dy)) * 20;
+                        }
+                    }
+                }
+            });
+    }
+    
     function deleteAllNodesAndEdges() {
         graph.nodes = [];
         graph.edges = [];
@@ -145,10 +215,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 console.log("source: " + d.index);
             } else {
                 console.log("target: " + d.index);
-                graph.addEdge(sourceNode, d.index);
+                graph.addEdge(sourceNode, d.index, 0);
+                selectedEdge = graph.edges.find(edge => edge.source === sourceNode && edge.target === d.index);
                 sourceNode = null;
                 redrawGraph();
                 console.log(graph);
+                modal.style.display = "block";
             }
         } else {
             console.log(d);
@@ -160,7 +232,43 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             graph.deleteEdge(d.source, d.target);
             redrawGraph();
         } else {
-            console.log("Click on edge " + "(" + d.source + ", " + d.target + ")");
+            console.log("Click on edge " + "(" + d.source + ", " + d.target + ") w =" + d.w);
+        }
+    }
+
+    function handleEdgeLabelHover(d, i) {
+        d3.select(this).attr("fill", "#ccc");
+    }
+    
+    function handleEdgeLabelMouseOut(d, i) {
+        d3.select(this).attr("fill", "black");
+    }
+    
+    function handleEdgeLabelClick(event, d) {
+        console.log("click on w(" + d.source + ", " + d.target + ") = " + d.w);
+        selectedEdge = d;
+        modal.style.display = "block";
+    }
+    
+    closeModal.onclick = function() {
+        modal.style.display = "none";
+        newWeightInput.value = "";
+    }
+    
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+        newWeightInput.value = "";
+    }
+
+    function handleClickUpdateWeightButton() {
+        console.log("click on update");
+        const newWeight = parseInt(newWeightInput.value);
+        if (!isNaN(newWeight) && selectedEdge) {
+            selectedEdge.w = newWeight;
+            console.log("new w(" + selectedEdge.source + ", " + selectedEdge.target + ") = " + selectedEdge.w);
+            redrawGraph();
+            modal.style.display = "none";
+            newWeightInput.value = "";
         }
     }
 
@@ -176,12 +284,36 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .attr("stroke", "black")
             .attr("stroke-width", 2)
             .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Set marker-end for new edges
-
+    
         const mergedEdges = newEdgePaths.merge(updatedEdges);
         updateEdgePositions(mergedEdges);
         updateArrowheadColor();
         mergedEdges.lower();
+    
+        const updatedEdgeLabels = svg.selectAll<SVGTextElement, Edge>(".edge-label").data(graph.edges);
+        updatedEdgeLabels.exit().remove();
+        const newEdgeLabels = updatedEdgeLabels.enter().append("text")
+            .attr("class", "edge-label")
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .attr("id", d => `edge-label-${d.source}-${d.target}`)
+            .text(d => d.w) // Default label text or format as needed
+            .attr("fill", "black") // Set initial color
+            .on("mouseover", handleEdgeLabelHover)
+            .on("mouseout", handleEdgeLabelMouseOut)
+            .on("click", handleEdgeLabelClick) // Add click event
+            .style("visibility", graph.isWeighted ? "visible" : "hidden"); // Conditionally set visibility
 
+
+    
+        const mergedEdgeLabels = newEdgeLabels.merge(updatedEdgeLabels);
+        updateEdgeLabelsPositions(mergedEdgeLabels);
+
+        // Ensure the text of the edge labels is updated
+        mergedEdgeLabels.text(d => d.w);
+        mergedEdgeLabels.style("visibility", graph.isWeighted ? "visible" : "hidden"); // Conditionally set visibility
+
+    
         const updatedNodes = svg
             .selectAll<SVGGElement, Node>(".node")
             .data(graph.nodes, d => d.index);
@@ -195,7 +327,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .append("circle")
             .attr("r", 15)
             .attr("fill", d => d.color)  // Set the fill attribute based on the condition
-
+    
         newNodeGroups
             .append("text")
             .attr("stroke", d => d.color === Color.BLACK ? "white" : "black")
@@ -210,11 +342,12 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         mergedNodes
             .select("text")
             .attr("stroke", d => d.color === Color.BLACK ? "white" : "black");
-
+    
         mergedNodes
             .call(drag);
         addEventListenerToSelection<SVGGElement, Node>(mergedNodes, "click", handleNodeClick);
         addEventListenerToSelection<SVGPathElement, Edge>(mergedEdges, "click", handleEdgeClick);
+        addEventListenerToSelection<SVGGElement, Edge>(edgeLabels, "click", handleEdgeLabelClick);
         applyDeletionClass(mergedNodes, deletingNodesEnabled);
         applyDeletionClass(mergedEdges, deletingEdgesEnabled);
     }
@@ -238,6 +371,57 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
         algorithmSelect.addEventListener("change", () => handleAlgorithmChange());
         sourceNodeSelect.addEventListener("change", () => handleSourceNodeSelectChange());
+        updateWeightButton.addEventListener("click", () => handleClickUpdateWeightButton());
+        document.getElementById("change-graph-is-weighted").addEventListener("click", () => changeGraphIsWeighted());
+    }
+
+    // Function to calculate midpoint of a quadratic Bézier curve
+    function getMidPointOnQuadraticBezier(startPoint, controlPoint, endPoint) {
+        const t = 0.5;
+        const x = Math.pow(1 - t, 2) * startPoint.x + 2 * (1 - t) * t * controlPoint.x + Math.pow(t, 2) * endPoint.x;
+        const y = Math.pow(1 - t, 2) * startPoint.y + 2 * (1 - t) * t * controlPoint.y + Math.pow(t, 2) * endPoint.y;
+        return { x, y };
+    }
+
+    // Function to calculate control point for quadratic Bézier curve
+    function getQuadraticControlPoint(sourceNode, targetNode) {
+        const dx = targetNode.x - sourceNode.x;
+        const dy = targetNode.y - sourceNode.y;
+        const curvature = 0.2;
+        const offsetX = dy * curvature;
+        const offsetY = -dx * curvature;
+        return {
+            x: (sourceNode.x + targetNode.x) / 2 + offsetX,
+            y: (sourceNode.y + targetNode.y) / 2 + offsetY
+        };
+    }
+
+    // Calculate outward offset for edge labels
+    function getOutwardOffset(sourceNode, targetNode, controlPoint, offset) {
+        const midPoint = getMidPointOnQuadraticBezier(sourceNode, controlPoint, targetNode);
+        const dx = midPoint.x - controlPoint.x;
+        const dy = midPoint.y - controlPoint.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        return {
+            x: (dx / length) * offset,
+            y: (dy / length) * offset
+        };
+    }
+
+    function changeGraphIsWeighted(){
+        console.log("Called changeGraphIsWeighted");
+        const changeGraphIsWeightedButton = document.getElementById("change-graph-is-weighted");
+        if (graph.isWeighted){
+            console.log("Change from weighted to unweighted");
+
+            graph.isWeighted = false;
+            changeGraphIsWeightedButton.textContent = "Make Weighted"
+        } else {
+            console.log("Change from unweighted to weighted");
+            graph.isWeighted = true;
+            changeGraphIsWeightedButton.textContent = "Make Unweighted"
+        }
+        redrawGraph();
     }
 
     function changeGraphType() {
@@ -487,6 +671,21 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         })
         .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
 
+    // Define edge labels
+    const edgeLabels = svg.selectAll(".edge-label")
+        .data(graph.edges)
+        .enter()
+        .append("text")
+        .attr("class", "edge-label")
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .attr("id", d => `edge-label-${d.source}-${d.target}`)
+        .text(d => d.w) // Default label text or format as needed
+        .on("mouseover", handleEdgeLabelHover)
+        .on("mouseout", handleEdgeLabelMouseOut)
+        .on("click", handleEdgeLabelClick) // Add click event
+        .style("visibility", graph.isWeighted ? "visible" : "hidden"); // Conditionally set visibility
+
 
     const node = svg
         .selectAll(".node")
@@ -516,5 +715,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     setupEventListeners();
     addEventListenerToSelection<SVGGElement, Node>(node, "click", handleNodeClick);
     addEventListenerToSelection<SVGGElement, Edge>(edge, "click", handleEdgeClick);
+    addEventListenerToSelection<SVGGElement, Edge>(edgeLabels, "click", handleEdgeLabelClick);
     updateEdgePositions(edge);
+    updateEdgeLabelsPositions(edgeLabels);
 }

@@ -16,17 +16,20 @@ export interface Node {
 export interface Edge {
   source: number;
   target: number;
+  w: number;
 }
 
 export class Graph {
   nodes: Node[];
   edges: Edge[];
   isDirected: boolean;
+  isWeighted: boolean;
 
   constructor() {
       this.nodes = [];
       this.edges = [];
       this.isDirected = false;
+      this.isWeighted = false;
   }
 
   addNode(x: number, y: number): void {
@@ -35,13 +38,13 @@ export class Graph {
     this.nodes.push(newNode);
   }
 
-  addEdge(source: number, target: number): void {
+  addEdge(source: number, target: number, w: number): void {
     if (!this.isDirected){
       console.log("Trying to add edge " + source + ", " + target + " in UNDIRECTED graph.");
       if (!this.edgeExists(source, target) && !this.edgeExists(target, source)) {
         if (source !== target){
           console.log("Edge doesn't exist. Adding it to the graph.");
-          const newEdge = { source, target };
+          const newEdge = { source, target, w };
           this.edges.push(newEdge);
         } else {
           console.log("Self-loops aren't allowed in undirected graphs. Edge can't be added to the graph.");
@@ -56,7 +59,7 @@ export class Graph {
           console.log("Edge is a self-loop.");
         }
         console.log("Edge doesn't exist. Adding it to the graph.");
-        const newEdge = { source, target };
+        const newEdge = { source, target, w };
         this.edges.push(newEdge);
       } else {
         console.log("Edge exists. It can't be added to the graph.")
