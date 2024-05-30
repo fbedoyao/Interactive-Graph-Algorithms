@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState } from './utils';
-import { breadthFirstSearch, breadthFirstSearchAsync, depthFirstSearch, printGraph } from './algorithm'
+import { breadthFirstSearch, breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -23,6 +23,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     const updateWeightButton = document.getElementById("updateWeightButton") as HTMLButtonElement;
     const cancelButton = document.getElementById("cancelButton") as HTMLButtonElement;
     const newWeightInput = document.getElementById("newWeightInput") as HTMLInputElement;
+    const outputBox = document.getElementById("output-box") as HTMLDivElement;
 
     // Functions to handle drag events
     function dragstarted(event, d) {
@@ -529,8 +530,9 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         redrawGraph();
     }
 
-    function runAlgorithm(){
+    async function runAlgorithm(){
         resetNodesState(graph);
+        outputBox.textContent = "";
         redrawGraph();
         const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
         const selectedAlgorithm = algorithmSelect.value;
@@ -539,15 +541,18 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         switch (selectedAlgorithm) {
             case "print":
                 algorithmFunction = printGraph;
-                algorithmFunction(graph);
+                await algorithmFunction(graph);
                 break;
             case "bfs":
                 algorithmFunction = breadthFirstSearchAsync;
-                algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph);
+                await algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph);
                 break;
             case "dfs":
                 algorithmFunction = depthFirstSearch;
-                algorithmFunction(graph, redrawGraph);
+                await algorithmFunction(graph, redrawGraph);
+            case "top-sort":
+                algorithmFunction = topologicalSort;
+                outputBox.textContent = await algorithmFunction(graph, redrawGraph);
             // Add cases for other algorithms as needed
             default:
                 return;
