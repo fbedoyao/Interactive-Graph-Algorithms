@@ -1,6 +1,8 @@
 import { Graph, Node, Color } from './graph';
 import { renderGraph } from './renderer';
 import { Queue } from './queue'
+import { LinkedList } from './linkedList';
+import { geoRotation } from 'd3';
 
 export function printGraph(graph: Graph){
     const adjList = graph.getAdjacencyList();
@@ -16,9 +18,60 @@ export function printGraph(graph: Graph){
 }
 
 let time = 0;
+let topologicallySortedNodes = null;
 
-export async function depthFirstSearch(graph: Graph, redrawGraph: () => void){
-    const adjList = graph.getAdjacencyList();
+function detectCycle(graph: Graph): boolean {
+    graph.nodes.forEach(node => {
+        node.color = Color.WHITE;
+    });
+
+    // Helper function for DFS
+    const dfsVisit = (graph: Graph, node: Node): boolean => {
+        node.color = Color.GRAY; // Mark the node as being visited
+        const adjacencyList = graph.getAdjacencyList();
+        const neighbors = adjacencyList.get(node.index) || [];
+
+        for (let neighborIndex of neighbors) {
+            const neighborNode = graph.getNodeByIndex(neighborIndex);
+            if (neighborNode.color === Color.WHITE) {
+                if (dfsVisit(graph, neighborNode)) {
+                    return true;
+                }
+            } else if (neighborNode.color === Color.GRAY) {
+                return true; // Cycle detected
+            }
+        }
+
+        node.color = Color.BLACK; // Mark the node as fully processed
+        return false;
+    };
+
+    // Perform DFS from each unvisited node
+    for (let node of graph.nodes) {
+        if (node.color === Color.WHITE) {
+            if (dfsVisit(graph, node)) {
+                return true; // Cycle found
+            }
+        }
+    }
+    return false; // No cycles found
+}
+
+export async function topologicalSort(graph: Graph, redrawGraph: () => void): Promise<string> {
+    topologicallySortedNodes = new LinkedList();
+
+    // Check if there is a cycle in the graph
+    if (!graph.isDirected || detectCycle(graph)) {
+        console.log("Graph contains a cycle or is not directed.");
+        return "Topological sort is only defined for directed acyclic graphs.";
+    }
+
+    await depthFirstSearch(graph, redrawGraph, true);
+    console.log("End of Topological Sort");
+    return "Topologically sorted nodes: \n" + topologicallySortedNodes.getListAsString();
+}
+
+export async function depthFirstSearch(graph: Graph, redrawGraph: () => void, topSort: boolean = false) {
     const V = graph.nodes;
 
     V.forEach(u => {
@@ -28,32 +81,35 @@ export async function depthFirstSearch(graph: Graph, redrawGraph: () => void){
 
     time = 0;
 
-    for (const u of graph.nodes){
-        if (u.color === Color.WHITE){
-            await DFSVisit(graph, u, redrawGraph);
+    for (const u of graph.nodes) {
+        if (u.color === Color.WHITE) {
+            await DFSVisit(graph, u, redrawGraph, topSort);
         }
     }
     console.log("End of DFS");
 }
 
-async function DFSVisit(graph: Graph, u: Node, redrawGraph: () => void){
+async function DFSVisit(graph: Graph, u: Node, redrawGraph: () => void, topSort: boolean = false) {
     const adjList = graph.getAdjacencyList();
     time = time + 1;
     u.d = time;
     u.color = Color.GRAY;
     redrawGraph();
     await new Promise(resolve => setTimeout(resolve, 1000)); 
-    const adjNodes = adjList.get(u.index);
-    for (const v_index of adjNodes){
+    const adjNodes = adjList.get(u.index) || [];
+    for (const v_index of adjNodes) {
         const v = graph.getNodeByIndex(v_index);
-        if (v.color === Color.WHITE){
+        if (v.color === Color.WHITE) {
             v.pred = u.index;
-            await DFSVisit(graph, v, redrawGraph);
+            await DFSVisit(graph, v, redrawGraph, topSort);
         }
     }
     u.color = Color.BLACK;
     time = time + 1;
     u.f = time;
+    if (topSort) {
+        topologicallySortedNodes.addToFront(u.index);
+    }
     redrawGraph();
     await new Promise(resolve => setTimeout(resolve, 1000)); 
 }
