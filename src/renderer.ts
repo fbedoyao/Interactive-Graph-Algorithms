@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState } from './utils';
-import { breadthFirstSearch, breadthFirstSearchAsync, printGraph } from './algorithm'
+import { breadthFirstSearch, breadthFirstSearchAsync, depthFirstSearch, printGraph } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -545,6 +545,9 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 algorithmFunction = breadthFirstSearchAsync;
                 algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph);
                 break;
+            case "dfs":
+                algorithmFunction = depthFirstSearch;
+                algorithmFunction(graph, redrawGraph);
             // Add cases for other algorithms as needed
             default:
                 return;
