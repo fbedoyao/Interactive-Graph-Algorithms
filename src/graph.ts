@@ -10,7 +10,8 @@ export interface Node {
   y: number;
   color: Color;
   d: number;
-  pred: number; 
+  pred: number;
+  f: number; 
 }
 
 export interface Edge {
@@ -34,7 +35,7 @@ export class Graph {
 
   addNode(x: number, y: number): void {
     const smallestUnusedIndex = this.findSmallestUnusedIndex();
-    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1};
+    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0};
     this.nodes.push(newNode);
   }
 

@@ -15,6 +15,49 @@ export function printGraph(graph: Graph){
     }
 }
 
+let time = 0;
+
+export async function depthFirstSearch(graph: Graph, redrawGraph: () => void){
+    const adjList = graph.getAdjacencyList();
+    const V = graph.nodes;
+
+    V.forEach(u => {
+        u.color = Color.WHITE;
+        u.pred = -1;
+    });
+
+    time = 0;
+
+    for (const u of graph.nodes){
+        if (u.color === Color.WHITE){
+            await DFSVisit(graph, u, redrawGraph);
+        }
+    }
+    console.log("End of DFS");
+}
+
+async function DFSVisit(graph: Graph, u: Node, redrawGraph: () => void){
+    const adjList = graph.getAdjacencyList();
+    time = time + 1;
+    u.d = time;
+    u.color = Color.GRAY;
+    redrawGraph();
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    const adjNodes = adjList.get(u.index);
+    for (const v_index of adjNodes){
+        const v = graph.getNodeByIndex(v_index);
+        if (v.color === Color.WHITE){
+            v.pred = u.index;
+            await DFSVisit(graph, v, redrawGraph);
+        }
+    }
+    u.color = Color.BLACK;
+    time = time + 1;
+    u.f = time;
+    redrawGraph();
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
+}
+
 export function breadthFirstSearch(graph: Graph, s_index: number){
     const adjList = graph.getAdjacencyList();
     const V = graph.nodes;
