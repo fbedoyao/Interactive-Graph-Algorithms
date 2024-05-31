@@ -17,6 +17,24 @@ export function printGraph(graph: Graph){
     }
 }
 
+export function reverseGraph(graph: Graph): Graph {
+    const reversedGraph = new Graph();
+    reversedGraph.isDirected = graph.isDirected;
+    reversedGraph.isWeighted = graph.isWeighted;
+
+    // Copy nodes
+    graph.nodes.forEach(node => {
+        reversedGraph.nodes.push({ ...node });
+    });
+
+    // Reverse edges
+    graph.edges.forEach(edge => {
+        reversedGraph.addEdge(edge.target, edge.source, edge.w);
+    });
+
+    return reversedGraph;
+}
+
 let time = 0;
 let topologicallySortedNodes = null;
 
