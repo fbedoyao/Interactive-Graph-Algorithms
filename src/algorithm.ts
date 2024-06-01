@@ -1,4 +1,4 @@
-import { Graph, Node, Color } from './graph';
+import { Graph, Node, Edge, Color } from './graph';
 import { renderGraph } from './renderer';
 import { Queue } from './queue'
 import { LinkedList } from './linkedList';
@@ -15,6 +15,10 @@ export function printGraph(graph: Graph){
             outputBox.innerHTML += outputLine;
         });
     }
+}
+
+export async function mstKruskal(graph: Graph){
+    const A: Set<Edge> = new Set();
 }
 
 export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () => void){
