@@ -4,8 +4,7 @@ import { Queue } from './queue'
 import { LinkedList } from './linkedList';
 import { geoRotation } from 'd3';
 
-export function printGraph(graph2: Graph){
-    const graph = reverseGraph(graph2);
+export function printGraph(graph: Graph){
     const adjList = graph.getAdjacencyList();
     const outputBox = document.getElementById("output-box");
 
@@ -19,6 +18,14 @@ export function printGraph(graph2: Graph){
 }
 
 export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () => void){
+
+    const outputBox = document.getElementById("output-box");
+    if (outputBox) {
+        outputBox.innerHTML = "";
+    } else {
+        console.log("Error with the outputbox");
+    }
+
     // Call DFS to compute finishing times u.f for each vertex u
     await depthFirstSearch(graph, redrawGraph);
 
@@ -26,8 +33,8 @@ export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () 
     const reversedGraph = reverseGraph(graph);
 
     // DFS(G_t), but in the main loop of DFS, consider the vertices in order of decreasing u.f
-    const dfsVisit = (graph: Graph, node: Node): boolean => {
-        console.log(node.index);
+    const dfsVisit = (graph: Graph, node: Node, result: number[]): void => {
+        result.push(node.index);
         node.color = Color.GRAY; // Mark the node as being visited
         const adjacencyList = graph.getAdjacencyList();
         const neighbors = adjacencyList.get(node.index) || [];
@@ -35,17 +42,20 @@ export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () 
         for (let neighborIndex of neighbors) {
             const neighborNode = graph.getNodeByIndex(neighborIndex);
             if (neighborNode.color === Color.WHITE) {
-                dfsVisit(graph, neighborNode);
+                dfsVisit(graph, neighborNode, result);
             }
         }
         node.color = Color.BLACK; // Mark the node as fully processed
-        return false;
     };
 
+    outputBox.innerHTML += "Strongly Connected Components<br><br>";
+    let sccNum = 1;
     for (let node of getNodesSortedByDecreasingF(reversedGraph)) {
         if (node.color === Color.WHITE) {
-            console.log("Connected Component");
-            dfsVisit(reversedGraph, node);
+            const result = [];
+            dfsVisit(reversedGraph, node, result);
+            const outputLine = `SCC${sccNum++}: ${result}<br>`;
+            outputBox.innerHTML += outputLine;
         }
     }
     console.log("End of SCC");
