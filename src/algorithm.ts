@@ -2,6 +2,7 @@ import { Graph, Node, Edge, Color } from './graph';
 import { renderGraph } from './renderer';
 import { Queue } from './queue'
 import { LinkedList } from './linkedList';
+import { MstForest } from './mstForest';
 import { geoRotation } from 'd3';
 
 export function printGraph(graph: Graph){
@@ -17,8 +18,47 @@ export function printGraph(graph: Graph){
     }
 }
 
-export async function mstKruskal(graph: Graph){
-    const A: Set<Edge> = new Set();
+export async function kruskal(graph: Graph){
+
+    if (!graph.isWeighted){
+        console.log("Minimum Spanning Tree is not defined for unweighted graphs.");
+        return null;
+    }
+
+    if (!graph.isConnected()){
+        console.log("Minimum Spanning Tree is not defined for unconnected graphs.");
+        return null;
+    }
+
+    let A: Set<Edge> = new Set();
+    const forest = new MstForest();
+    for (let v of graph.nodes){
+        forest.makeSet(v);
+    }
+    const sortedEdges = getEdgesSortedByNonDecreasingWeight(graph);
+    for (let edge of sortedEdges){
+        const u = graph.getNodeByIndex(edge.source);
+        const v = graph.getNodeByIndex(edge.target);
+        if (!forest.findSet(u).equals(forest.findSet(v))){
+            A = union(A, new Set<Edge>([{source: u.index, target: v.index, w: edge.w}]));
+            forest.union(u, v);
+        }
+    }
+    console.log(A);
+    return A;
+}
+
+  // Function to return edges in non-decreasing order by weight
+function getEdgesSortedByNonDecreasingWeight(graph: Graph): Edge[] {
+    return graph.edges.slice().sort((a, b) => a.w - b.w);
+}
+
+function union<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+    let unionSet = new Set<T>(setA); // Start with all elements from setA
+    setB.forEach((elem) => {
+        unionSet.add(elem); // Add elements from setB
+    });
+    return unionSet;
 }
 
 export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () => void){

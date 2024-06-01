@@ -148,4 +148,28 @@ export class Graph {
     return adjacencyMatrix;
   }
 
+    // Function to check if the graph is connected
+    isConnected(): boolean {
+      if (this.nodes.length === 0) return true;
+  
+      const visited = new Set<number>();
+      const adjacencyList = this.getAdjacencyList();
+  
+      const dfs = (nodeIndex: number) => {
+        visited.add(nodeIndex);
+        const neighbors = adjacencyList.get(nodeIndex) || [];
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            dfs(neighbor);
+          }
+        }
+      };
+  
+      // Start DFS from the first node
+      dfs(this.nodes[0].index);
+  
+      // Check if all nodes are visited
+      return visited.size === this.nodes.length;
+    }
+
 }
