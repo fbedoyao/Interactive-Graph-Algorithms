@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState } from './utils';
-import { breadthFirstSearch, breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort } from './algorithm'
+import { breadthFirstSearch, breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -550,9 +550,15 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             case "dfs":
                 algorithmFunction = depthFirstSearch;
                 await algorithmFunction(graph, redrawGraph);
+                break;
             case "top-sort":
                 algorithmFunction = topologicalSort;
                 outputBox.textContent = await algorithmFunction(graph, redrawGraph);
+                break;
+            case "scc":
+                algorithmFunction = stronglyConnectedComponents;
+                algorithmFunction(graph, redrawGraph);
+                break;
             // Add cases for other algorithms as needed
             default:
                 return;

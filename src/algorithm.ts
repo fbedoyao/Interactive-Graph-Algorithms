@@ -17,6 +17,74 @@ export function printGraph(graph: Graph){
     }
 }
 
+export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () => void){
+
+    const outputBox = document.getElementById("output-box");
+    if (outputBox) {
+        outputBox.innerHTML = "";
+    } else {
+        console.log("Error with the outputbox");
+    }
+
+    // Call DFS to compute finishing times u.f for each vertex u
+    await depthFirstSearch(graph, redrawGraph);
+
+    // Compute G_t
+    const reversedGraph = reverseGraph(graph);
+
+    // DFS(G_t), but in the main loop of DFS, consider the vertices in order of decreasing u.f
+    const dfsVisit = (graph: Graph, node: Node, result: number[]): void => {
+        result.push(node.index);
+        node.color = Color.GRAY; // Mark the node as being visited
+        const adjacencyList = graph.getAdjacencyList();
+        const neighbors = adjacencyList.get(node.index) || [];
+
+        for (let neighborIndex of neighbors) {
+            const neighborNode = graph.getNodeByIndex(neighborIndex);
+            if (neighborNode.color === Color.WHITE) {
+                dfsVisit(graph, neighborNode, result);
+            }
+        }
+        node.color = Color.BLACK; // Mark the node as fully processed
+    };
+
+    outputBox.innerHTML += "Strongly Connected Components<br><br>";
+    let sccNum = 1;
+    for (let node of getNodesSortedByDecreasingF(reversedGraph)) {
+        if (node.color === Color.WHITE) {
+            const result = [];
+            dfsVisit(reversedGraph, node, result);
+            const outputLine = `SCC${sccNum++}: ${result}<br>`;
+            outputBox.innerHTML += outputLine;
+        }
+    }
+    console.log("End of SCC");
+}
+
+export function reverseGraph(graph: Graph): Graph {
+    const reversedGraph = new Graph();
+    reversedGraph.isDirected = graph.isDirected;
+    reversedGraph.isWeighted = graph.isWeighted;
+
+    // Copy nodes
+    graph.nodes.forEach(node => {
+        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f};
+        reversedGraph.nodes.push({ ...newNode });
+    });
+
+    // Reverse edges
+    graph.edges.forEach(edge => {
+        reversedGraph.addEdge(edge.target, edge.source, edge.w);
+    });
+
+    return reversedGraph;
+}
+
+function getNodesSortedByDecreasingF(graph: Graph): Node[] {
+    return graph.nodes.slice().sort((a, b) => b.f - a.f);
+}
+
+
 let time = 0;
 let topologicallySortedNodes = null;
 
