@@ -1,7 +1,8 @@
-import { Graph, Node, Color } from './graph';
+import { Graph, Node, Edge, Color } from './graph';
 import { renderGraph } from './renderer';
 import { Queue } from './queue'
 import { LinkedList } from './linkedList';
+import { MstForest } from './mstForest';
 import { geoRotation } from 'd3';
 
 export function printGraph(graph: Graph){
@@ -15,6 +16,49 @@ export function printGraph(graph: Graph){
             outputBox.innerHTML += outputLine;
         });
     }
+}
+
+export async function kruskal(graph: Graph, redrawGraph: () => void){
+    if (!graph.isWeighted){
+        console.log("Minimum Spanning Tree is not defined for unweighted graphs.");
+        return null;
+    }
+    if (!graph.isConnected()){
+        console.log("Minimum Spanning Tree is not defined for unconnected graphs.");
+        return null;
+    }
+    let A: Set<Edge> = new Set();
+    const forest = new MstForest();
+    for (let v of graph.nodes){
+        forest.makeSet(v);
+    }
+    const sortedEdges = getEdgesSortedByNonDecreasingWeight(graph);
+    for (let edge of sortedEdges){
+        const u = graph.getNodeByIndex(edge.source);
+        const v = graph.getNodeByIndex(edge.target);
+        if (!forest.findSet(u).equals(forest.findSet(v))){
+            edge.isHighlighted = true;
+            A = union(A, new Set<Edge>([{source: u.index, target: v.index, w: edge.w, isHighlighted: false}]));
+            forest.union(u, v);
+            redrawGraph();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+    console.log(A);
+    return A;
+}
+
+  // Function to return edges in non-decreasing order by weight
+function getEdgesSortedByNonDecreasingWeight(graph: Graph): Edge[] {
+    return graph.edges.slice().sort((a, b) => a.w - b.w);
+}
+
+function union<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+    let unionSet = new Set<T>(setA); // Start with all elements from setA
+    setB.forEach((elem) => {
+        unionSet.add(elem); // Add elements from setB
+    });
+    return unionSet;
 }
 
 export async function stronglyConnectedComponents(graph: Graph, redrawGraph: () => void){
@@ -180,42 +224,6 @@ async function DFSVisit(graph: Graph, u: Node, redrawGraph: () => void, topSort:
     }
     redrawGraph();
     await new Promise(resolve => setTimeout(resolve, 1000)); 
-}
-
-export function breadthFirstSearch(graph: Graph, s_index: number){
-    const adjList = graph.getAdjacencyList();
-    const V = graph.nodes;
-
-    // Initialization
-    const s = graph.getNodeByIndex(s_index);
-    V.forEach(u => {
-        if (u.index !== s.index) {
-            u.color = Color.WHITE;
-            u.d = Number.MAX_VALUE;
-            u.pred = -1;
-        }
-    })
-    s.color = Color.GRAY;
-    s.d = 0;
-    s.pred = -1;
-    const Q = new Queue<number>();
-    Q.enqueue(s.index);
-    while (!Q.isEmpty()){
-        const u_index = Q.dequeue();
-        const u = graph.getNodeByIndex(u_index);
-        const adjNodes = adjList.get(u_index);
-        adjNodes.forEach(v_index => {
-            const v = graph.getNodeByIndex(v_index);
-            if (v.color === Color.WHITE){
-                v.color = Color.GRAY;
-                v.d = u.d + 1;
-                v.pred = u_index;
-                Q.enqueue(v.index);
-            }
-        })
-        u.color = Color.BLACK;
-    }
-    console.log("End of BFS");
 }
 
 export async function breadthFirstSearchAsync(graph: Graph, s_index: number, redrawGraph: () => void){

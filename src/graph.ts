@@ -18,6 +18,7 @@ export interface Edge {
   source: number;
   target: number;
   w: number;
+  isHighlighted: boolean;
 }
 
 export class Graph {
@@ -45,7 +46,7 @@ export class Graph {
       if (!this.edgeExists(source, target) && !this.edgeExists(target, source)) {
         if (source !== target){
           console.log("Edge doesn't exist. Adding it to the graph.");
-          const newEdge = { source, target, w };
+          const newEdge = { source, target, w, isHighlighted: false };
           this.edges.push(newEdge);
         } else {
           console.log("Self-loops aren't allowed in undirected graphs. Edge can't be added to the graph.");
@@ -60,7 +61,7 @@ export class Graph {
           console.log("Edge is a self-loop.");
         }
         console.log("Edge doesn't exist. Adding it to the graph.");
-        const newEdge = { source, target, w };
+        const newEdge = { source, target, w, isHighlighted: false };
         this.edges.push(newEdge);
       } else {
         console.log("Edge exists. It can't be added to the graph.")
@@ -147,5 +148,29 @@ export class Graph {
 
     return adjacencyMatrix;
   }
+
+    // Function to check if the graph is connected
+    isConnected(): boolean {
+      if (this.nodes.length === 0) return true;
+  
+      const visited = new Set<number>();
+      const adjacencyList = this.getAdjacencyList();
+  
+      const dfs = (nodeIndex: number) => {
+        visited.add(nodeIndex);
+        const neighbors = adjacencyList.get(nodeIndex) || [];
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            dfs(neighbor);
+          }
+        }
+      };
+  
+      // Start DFS from the first node
+      dfs(this.nodes[0].index);
+  
+      // Check if all nodes are visited
+      return visited.size === this.nodes.length;
+    }
 
 }

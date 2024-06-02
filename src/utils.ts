@@ -55,3 +55,9 @@ export function resetNodesState(graph: Graph){
         node.pred = -1;
     })
 }
+
+export function resetEdgeState(graph: Graph){
+    graph.edges.forEach(edge => {
+        edge.isHighlighted = false;
+    })
+}
