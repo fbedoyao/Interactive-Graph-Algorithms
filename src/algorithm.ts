@@ -112,7 +112,7 @@ export function reverseGraph(graph: Graph): Graph {
 
     // Copy nodes
     graph.nodes.forEach(node => {
-        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f};
+        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f, key: Number.MAX_VALUE};
         reversedGraph.nodes.push({ ...newNode });
     });
 
