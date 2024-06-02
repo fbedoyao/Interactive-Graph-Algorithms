@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
-import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState } from './utils';
+import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState } from './utils';
 import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
@@ -535,6 +535,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
     async function runAlgorithm(){
         resetNodesState(graph);
+        resetEdgeState(graph);
         outputBox.textContent = "";
         redrawGraph();
         const algorithmSelect = document.getElementById("algorithm-select") as HTMLSelectElement;
