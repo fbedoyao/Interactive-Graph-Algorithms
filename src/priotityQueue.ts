@@ -3,8 +3,13 @@ import { Node } from "graph"
 export class PriorityQueue {
     private heap: Node[];
 
-    constructor() {
+    constructor(nodes: Node[] = []) {
         this.heap = [];
+        if (nodes){
+            for (let node of nodes){
+                this.insert(node);
+            }
+        }
     }
 
     private leftChildIndex(index: number): number {
@@ -61,6 +66,15 @@ export class PriorityQueue {
         return this.heap.length === 0;
     }
 
+    public hasElement(node: Node) {
+        for (let u of this.heap){
+            if (node.index === u.index){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public insert(node: Node): void {
         this.heap.push(node);
         this.heapifyUp(this.heap.length - 1);
@@ -79,5 +93,19 @@ export class PriorityQueue {
         this.heap[0] = this.heap.pop()!;
         this.heapifyDown(0);
         return minNode;
+    }
+
+    public updatePriority(node: Node, newKey: number): void {
+        const index = this.heap.indexOf(node);
+        if (index === -1) return;
+
+        const oldKey = node.key;
+        node.key = newKey;
+
+        if (newKey < oldKey) {
+            this.heapifyUp(index);
+        } else {
+            this.heapifyDown(index);
+        }
     }
 }

@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState } from './utils';
-import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal } from './algorithm'
+import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -566,6 +566,10 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             case "kruskal":
                 algorithmFunction = kruskal;
                 await algorithmFunction(graph, redrawGraph);
+                break;
+            case "prim":
+                algorithmFunction = prim;
+                await prim(graph, graph.nodes[0]);
                 break;
             // Add cases for other algorithms as needed
             default:

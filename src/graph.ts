@@ -35,6 +35,27 @@ export class Graph {
       this.isWeighted = false;
   }
 
+  getWeight(u: Node, v: Node): number{
+    if (!this.isWeighted){
+      return 0;
+    }
+    if (this.isDirected){
+      for (let edge of this.edges){
+        if(edge.source === u.index && edge.target === v.index){
+          return edge.w;
+        }
+      }
+    } else {
+      for (let edge of this.edges){
+        if((edge.source === u.index && edge.target === v.index) || (edge.target === u.index && edge.source === v.index)){
+          return edge.w;
+        }
+      }
+    }
+    console.log("Edge wasn't found");
+    return -1; // Edge wasn't found
+  }
+
   addNode(x: number, y: number): void {
     const smallestUnusedIndex = this.findSmallestUnusedIndex();
     const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE};
