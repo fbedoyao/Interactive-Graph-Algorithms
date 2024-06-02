@@ -18,6 +18,7 @@ export interface Edge {
   source: number;
   target: number;
   w: number;
+  isHighlighted: boolean;
 }
 
 export class Graph {
@@ -45,7 +46,7 @@ export class Graph {
       if (!this.edgeExists(source, target) && !this.edgeExists(target, source)) {
         if (source !== target){
           console.log("Edge doesn't exist. Adding it to the graph.");
-          const newEdge = { source, target, w };
+          const newEdge = { source, target, w, isHighlighted: false };
           this.edges.push(newEdge);
         } else {
           console.log("Self-loops aren't allowed in undirected graphs. Edge can't be added to the graph.");
@@ -60,7 +61,7 @@ export class Graph {
           console.log("Edge is a self-loop.");
         }
         console.log("Edge doesn't exist. Adding it to the graph.");
-        const newEdge = { source, target, w };
+        const newEdge = { source, target, w, isHighlighted: false };
         this.edges.push(newEdge);
       } else {
         console.log("Edge exists. It can't be added to the graph.")

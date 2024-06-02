@@ -16,14 +16,14 @@ const dummyNodes = [
 ];
 
 const dummyEdges = [
-    { source: 0, target: 1, w: 5 },
-    { source: 1, target: 2, w: 3 },
-    { source: 2, target: 0, w: -1 },
-    { source: 3, target: 1, w: 2 },
-    { source: 0, target: 4, w: 4 },
-    { source: 5, target: 2, w: 7 },
-    { source: 4, target: 4, w: 1 },
-    { source: 0, target: 2, w: 10 }
+    { source: 0, target: 1, w: 5, isHighlighted: false},
+    { source: 1, target: 2, w: 3, isHighlighted: false },
+    { source: 2, target: 0, w: -1, isHighlighted: false },
+    { source: 3, target: 1, w: 2, isHighlighted: false },
+    { source: 0, target: 4, w: 4, isHighlighted: false },
+    { source: 5, target: 2, w: 7, isHighlighted: false },
+    { source: 4, target: 4, w: 1, isHighlighted: false },
+    { source: 0, target: 2, w: 10, isHighlighted: false }
 ];
 
 graph.nodes = dummyNodes;

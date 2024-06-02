@@ -86,7 +86,10 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
 
     function updateEdgePositions(edgesSVGElement) {
         if (graph.edges.length > 0) {
-            edgesSVGElement.attr("d", function(d) {
+            edgesSVGElement
+            .attr("stroke", d => d.isHighlighted ? "blue" : "black")
+            .attr("stroke-width", d => d.isHighlighted ? 4 : 2)
+            .attr("d", function(d) {
                 const sourceNode = graph.nodes.find(node => node.index === d.source);
                 const targetNode = graph.nodes.find(node => node.index === d.target);
                 
@@ -234,7 +237,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             graph.deleteEdge(d.source, d.target);
             redrawGraph();
         } else {
-            console.log("Click on edge " + "(" + d.source + ", " + d.target + ") w =" + d.w);
+            console.log("Click on edge " + "(" + d.source + ", " + d.target + ") w =" + d.w + " isHighlighted: " + d.isHighlighted);
         }
     }
 
@@ -283,8 +286,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             .enter()
             .append("path")
             .classed("edge", true)
-            .attr("stroke", "black")
-            .attr("stroke-width", 2)
+            .attr("stroke", d => d.isHighlighted ? "blue" : "black")
+            .attr("stroke-width", d => d.isHighlighted ? 4 : 2)
             .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Set marker-end for new edges
     
         const mergedEdges = newEdgePaths.merge(updatedEdges);
@@ -561,7 +564,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 break;
             case "kruskal":
                 algorithmFunction = kruskal;
-                algorithmFunction(graph);
+                await algorithmFunction(graph, redrawGraph);
                 break;
             // Add cases for other algorithms as needed
             default:
@@ -669,8 +672,8 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             }
           })
         .classed("edge", true)
-        .attr("stroke", "black")
-        .attr("stroke-width", 2)
+        .attr("stroke", d => d.isHighlighted ? "blue" : "black")
+        .attr("stroke-width", d => d.isHighlighted ? 4 : 2)
         .attr("d", function(d) {
             const sourceNode = graph.nodes.find(node => node.index === d.source);
             const targetNode = graph.nodes.find(node => node.index === d.target);
