@@ -19,7 +19,7 @@ export function printGraph(graph: Graph){
     }
 }
 
-export async function prim(graph: Graph, r: Node) {
+export async function prim(graph: Graph, r: Node, redrawGraph: () => void) {
     if (!graph.isWeighted){
         console.log("Minimum Spanning Tree is not defined for unweighted graphs.");
         return null;
@@ -47,6 +47,20 @@ export async function prim(graph: Graph, r: Node) {
             }
         }
     }
+
+    // Highlight only the edges in the MST
+    for (let u of graph.nodes) {
+        if (u.pred !== -1) {
+            let highlightedEdge = graph.getEdge(u.index, u.pred);
+            if (highlightedEdge) {
+                highlightedEdge.isHighlighted = true;
+                redrawGraph();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }
+    
+    redrawGraph();
     console.log("End of Prim");
 }
 
@@ -144,7 +158,7 @@ export function reverseGraph(graph: Graph): Graph {
 
     // Copy nodes
     graph.nodes.forEach(node => {
-        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f, key: Number.MAX_VALUE};
+        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f, key: Number.MAX_VALUE, isHighlighted: false};
         reversedGraph.nodes.push({ ...newNode });
     });
 

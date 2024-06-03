@@ -569,7 +569,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 break;
             case "prim":
                 algorithmFunction = prim;
-                await prim(graph, graph.nodes[0]);
+                await prim(graph, graph.nodes[0], redrawGraph);
                 break;
             // Add cases for other algorithms as needed
             default:

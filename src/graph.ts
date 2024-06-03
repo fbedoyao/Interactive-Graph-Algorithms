@@ -1,3 +1,5 @@
+import { some } from "d3";
+
 export enum Color {
   WHITE = "white",
   GRAY = "#ccc",
@@ -13,6 +15,7 @@ export interface Node {
   pred: number;
   f: number;
   key: number; 
+  isHighlighted: boolean;
 }
 
 export interface Edge {
@@ -33,6 +36,24 @@ export class Graph {
       this.edges = [];
       this.isDirected = false;
       this.isWeighted = false;
+  }
+
+  getEdge(sourceIndex: number, targetIndex: number): Edge {
+    if (this.isDirected){
+      for (let edge of this.edges){
+        if (edge.source === sourceIndex && edge.target === targetIndex){
+          return edge;
+        }
+      }
+    } else {
+      for (let edge of this.edges){
+        if ((edge.source === sourceIndex && edge.target === targetIndex) || (edge.source === targetIndex && edge.target === sourceIndex)){
+          return edge;
+        }
+      }
+    }
+    console.log("Couldn't getEdge");
+    return null;
   }
 
   getWeight(u: Node, v: Node): number{
@@ -58,7 +79,7 @@ export class Graph {
 
   addNode(x: number, y: number): void {
     const smallestUnusedIndex = this.findSmallestUnusedIndex();
-    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE};
+    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false};
     this.nodes.push(newNode);
   }
 
