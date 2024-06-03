@@ -1,3 +1,5 @@
+import { some } from "d3";
+
 export enum Color {
   WHITE = "white",
   GRAY = "#ccc",
@@ -11,7 +13,9 @@ export interface Node {
   color: Color;
   d: number;
   pred: number;
-  f: number; 
+  f: number;
+  key: number; 
+  isHighlighted: boolean;
 }
 
 export interface Edge {
@@ -34,9 +38,48 @@ export class Graph {
       this.isWeighted = false;
   }
 
+  getEdge(sourceIndex: number, targetIndex: number): Edge {
+    if (this.isDirected){
+      for (let edge of this.edges){
+        if (edge.source === sourceIndex && edge.target === targetIndex){
+          return edge;
+        }
+      }
+    } else {
+      for (let edge of this.edges){
+        if ((edge.source === sourceIndex && edge.target === targetIndex) || (edge.source === targetIndex && edge.target === sourceIndex)){
+          return edge;
+        }
+      }
+    }
+    console.log("Couldn't getEdge");
+    return null;
+  }
+
+  getWeight(u: Node, v: Node): number{
+    if (!this.isWeighted){
+      return 0;
+    }
+    if (this.isDirected){
+      for (let edge of this.edges){
+        if(edge.source === u.index && edge.target === v.index){
+          return edge.w;
+        }
+      }
+    } else {
+      for (let edge of this.edges){
+        if((edge.source === u.index && edge.target === v.index) || (edge.target === u.index && edge.source === v.index)){
+          return edge.w;
+        }
+      }
+    }
+    console.log("Edge wasn't found");
+    return -1; // Edge wasn't found
+  }
+
   addNode(x: number, y: number): void {
     const smallestUnusedIndex = this.findSmallestUnusedIndex();
-    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0};
+    const newNode = { index: smallestUnusedIndex, x, y, color : Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false};
     this.nodes.push(newNode);
   }
 

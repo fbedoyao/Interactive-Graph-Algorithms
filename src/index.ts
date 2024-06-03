@@ -7,12 +7,12 @@ const graph = new Graph();
 
 // Populate the graph with dummy data
 const dummyNodes = [
-    { index: 0, x: 450, y: 365, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f:0},
-    { index: 1, x: 455, y: 86, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0 },
-    { index: 2, x: 254, y: 222, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0 },
-    { index: 3, x: 695, y: 330, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0 },
-    { index: 4, x: 619, y: 135, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0 },
-    { index: 5, x: 284, y: 423, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0 }
+    { index: 0, x: 450, y: 365, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f:0, key: Number.MAX_VALUE, isHighlighted: false},
+    { index: 1, x: 455, y: 86, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false },
+    { index: 2, x: 254, y: 222, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false },
+    { index: 3, x: 695, y: 330, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false },
+    { index: 4, x: 619, y: 135, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false },
+    { index: 5, x: 284, y: 423, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false }
 ];
 
 const dummyEdges = [

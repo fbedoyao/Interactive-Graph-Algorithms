@@ -4,6 +4,7 @@ import { Queue } from './queue'
 import { LinkedList } from './linkedList';
 import { MstForest } from './mstForest';
 import { geoRotation } from 'd3';
+import { PriorityQueue } from './priotityQueue';
 
 export function printGraph(graph: Graph){
     const adjList = graph.getAdjacencyList();
@@ -16,6 +17,51 @@ export function printGraph(graph: Graph){
             outputBox.innerHTML += outputLine;
         });
     }
+}
+
+export async function prim(graph: Graph, r: Node, redrawGraph: () => void) {
+    if (!graph.isWeighted){
+        console.log("Minimum Spanning Tree is not defined for unweighted graphs.");
+        return null;
+    }
+    if (!graph.isConnected()){
+        console.log("Minimum Spanning Tree is not defined for unconnected graphs.");
+        return null;
+    }
+    let adjacencyList = graph.getAdjacencyList();
+    for (let u of graph.nodes){
+        u.key = Number.MAX_VALUE;
+        u.pred = -1;
+    }
+    r.key = 0;
+    let Q = new PriorityQueue(graph.nodes);
+    while (!Q.isEmpty()){
+        let u = Q.extractMin();
+        let neighbors = adjacencyList.get(u.index);
+        for(let v_index of neighbors){
+            let v = graph.getNodeByIndex(v_index);
+            let w = graph.getWeight(u, v);
+            if (Q.hasElement(v) && w < v.key){
+                v.pred = u.index;
+                Q.updatePriority(v, w);
+            }
+        }
+    }
+
+    // Highlight only the edges in the MST
+    for (let u of graph.nodes) {
+        if (u.pred !== -1) {
+            let highlightedEdge = graph.getEdge(u.index, u.pred);
+            if (highlightedEdge) {
+                highlightedEdge.isHighlighted = true;
+                redrawGraph();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }
+    
+    redrawGraph();
+    console.log("End of Prim");
 }
 
 export async function kruskal(graph: Graph, redrawGraph: () => void){
@@ -112,7 +158,7 @@ export function reverseGraph(graph: Graph): Graph {
 
     // Copy nodes
     graph.nodes.forEach(node => {
-        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f};
+        const newNode = { index: node.index, x: node.x, y: node.y, color: Color.WHITE, d: node.d, pred: -1, f:node.f, key: Number.MAX_VALUE, isHighlighted: false};
         reversedGraph.nodes.push({ ...newNode });
     });
 
