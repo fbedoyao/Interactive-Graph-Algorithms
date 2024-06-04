@@ -573,7 +573,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 break;
             case "bellman-ford":
                 algorithmFunction = bellmanFord;
-                if (await algorithmFunction(graph, graph.nodes[0], redrawGraph)){
+                if (await algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph)){
                     console.log("End of Bellman Ford. No negative weight cycles.");
                 } else {
                     console.log("Negative weight cycles");
@@ -591,7 +591,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function handleAlgorithmChange(){
-        if (algorithmSelect.value === 'bfs') {
+        if (algorithmSelect.value === 'bfs' || algorithmSelect.value === "bellman-ford") {
             sourceNodeContainer.style.display = 'block';
             populateSourceNodeSelector();
         } else {

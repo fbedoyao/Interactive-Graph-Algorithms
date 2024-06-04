@@ -17,7 +17,8 @@ export function printGraph(graph: Graph){
     }
 }
 
-export async function bellmanFord(graph: Graph, s: Node, redrawGraph: () => void): Promise<boolean>{
+export async function bellmanFord(graph: Graph, s_index: number, redrawGraph: () => void): Promise<boolean>{
+    let s = graph.getNodeByIndex(s_index);
     initializeSingleSource(graph, s);
     for (let i = 1; i < graph.nodes.length - 1; i++){
         for (let edge of graph.edges){
