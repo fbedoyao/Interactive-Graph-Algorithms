@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState } from './utils';
-import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim } from './algorithm'
+import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim, bellmanFord } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -571,6 +571,13 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 algorithmFunction = prim;
                 await prim(graph, graph.nodes[0], redrawGraph);
                 break;
+            case "bellman-ford":
+                algorithmFunction = bellmanFord;
+                if (await algorithmFunction(graph, graph.nodes[0], redrawGraph)){
+                    console.log("End of Bellman Ford. No negative weight cycles.");
+                } else {
+                    console.log("Negative weight cycles");
+                }
             // Add cases for other algorithms as needed
             default:
                 return;

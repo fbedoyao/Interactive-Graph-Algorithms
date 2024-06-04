@@ -1,9 +1,7 @@
 import { Graph, Node, Edge, Color } from './graph';
-import { renderGraph } from './renderer';
 import { Queue } from './queue'
 import { LinkedList } from './linkedList';
 import { MstForest } from './mstForest';
-import { geoRotation } from 'd3';
 import { PriorityQueue } from './priotityQueue';
 
 export function printGraph(graph: Graph){
@@ -16,6 +14,42 @@ export function printGraph(graph: Graph){
             const outputLine = `${node} -> ${adjNodes}<br>`;
             outputBox.innerHTML += outputLine;
         });
+    }
+}
+
+export async function bellmanFord(graph: Graph, s: Node, redrawGraph: () => void): Promise<boolean>{
+    initializeSingleSource(graph, s);
+    for (let i = 1; i < graph.nodes.length - 1; i++){
+        for (let edge of graph.edges){
+            let u = graph.getNodeByIndex(edge.source);
+            let v = graph.getNodeByIndex(edge.target);
+            relax(graph, u, v)
+        }
+    }
+    for (let edge of graph.edges){
+        let u = graph.getNodeByIndex(edge.source);
+        let v = graph.getNodeByIndex(edge.target);
+        let w = graph.getWeight(u, v);
+        if (v.d > u.d + w) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function initializeSingleSource(graph: Graph, s: Node){
+    for (let v of graph.nodes ){
+        v.d = Number.MAX_VALUE;
+        v.pred = -1;
+    }
+    s.d = 0;
+}
+
+function relax(graph: Graph, u: Node, v: Node){
+    let w = graph.getWeight(u, v)
+    if (v.d > u.d + w){
+        v.d = u.d + w;
+        v.pred = u.index;
     }
 }
 
