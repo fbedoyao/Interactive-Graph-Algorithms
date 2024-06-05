@@ -17,6 +17,30 @@ export function printGraph(graph: Graph){
     }
 }
 
+export async function dijkstra(graph: Graph, s_index: number, redrawGraph: () => void){
+    for (let edge of graph.edges){
+        if (edge.w < 0){
+            console.log("Dijkstra is not defined for graphs with negative edges");
+            return;
+        }
+    }
+    let adjacencyList = graph.getAdjacencyList();
+    initializeSingleSource(graph, graph.getNodeByIndex(s_index));
+    let S = new Set<Node>;
+    let Q = new PriorityQueue(graph.nodes, (a, b) => a.d - b.d);
+    while (!Q.isEmpty()){
+        let u = Q.extractMin();
+        S = S.add(u);
+        let neighbors = adjacencyList.get(u.index);
+        for(let v_index of neighbors){
+            let v = graph.getNodeByIndex(v_index);
+            relaxDijkstra(graph, u, v, Q);
+        }
+    }
+    console.log("End of Dijkstra");
+    console.log();
+}
+
 export async function bellmanFord(graph: Graph, s_index: number, redrawGraph: () => void): Promise<boolean>{
     let s = graph.getNodeByIndex(s_index);
     initializeSingleSource(graph, s);
@@ -54,6 +78,15 @@ function relax(graph: Graph, u: Node, v: Node){
     }
 }
 
+function relaxDijkstra(graph: Graph, u: Node, v: Node, pq: PriorityQueue){
+    let w = graph.getWeight(u, v)
+    if (v.d > u.d + w){
+        //v.d = u.d + w;
+        pq.updatePriorityByD(v, u.d+w);
+        v.pred = u.index;
+    }
+}
+
 export async function prim(graph: Graph, r: Node, redrawGraph: () => void) {
     if (!graph.isWeighted){
         console.log("Minimum Spanning Tree is not defined for unweighted graphs.");
@@ -69,7 +102,7 @@ export async function prim(graph: Graph, r: Node, redrawGraph: () => void) {
         u.pred = -1;
     }
     r.key = 0;
-    let Q = new PriorityQueue(graph.nodes);
+    let Q = new PriorityQueue(graph.nodes, (a, b) => a.key - b.key);
     while (!Q.isEmpty()){
         let u = Q.extractMin();
         let neighbors = adjacencyList.get(u.index);
@@ -78,7 +111,8 @@ export async function prim(graph: Graph, r: Node, redrawGraph: () => void) {
             let w = graph.getWeight(u, v);
             if (Q.hasElement(v) && w < v.key){
                 v.pred = u.index;
-                Q.updatePriority(v, w);
+                //v.key = w
+                Q.updatePriorityByKey(v, w);
             }
         }
     }
