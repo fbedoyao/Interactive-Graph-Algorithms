@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState } from './utils';
-import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim, bellmanFord } from './algorithm'
+import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim, bellmanFord, dijkstra } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
     // State Variables
@@ -578,7 +578,11 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 } else {
                     console.log("Negative weight cycles");
                 }
-            // Add cases for other algorithms as needed
+                break;
+            case "dijkstra":
+                algorithmFunction = dijkstra;
+                await algorithmFunction(graph, parseInt(sourceNodeSelect.value, 10), redrawGraph);
+                break;
             default:
                 return;
         }
@@ -591,7 +595,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function handleAlgorithmChange(){
-        if (algorithmSelect.value === 'bfs' || algorithmSelect.value === "bellman-ford") {
+        if (algorithmSelect.value === 'bfs' || algorithmSelect.value === "bellman-ford" || algorithmSelect.value === "dijkstra") {
             sourceNodeContainer.style.display = 'block';
             populateSourceNodeSelector();
         } else {

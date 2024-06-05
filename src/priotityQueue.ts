@@ -1,12 +1,14 @@
-import { Node } from "graph"
+import { Node } from "graph";
 
 export class PriorityQueue {
     private heap: Node[];
+    private comparator: (a: Node, b: Node) => number;
 
-    constructor(nodes: Node[] = []) {
+    constructor(nodes: Node[] = [], comparator: (a: Node, b: Node) => number) {
         this.heap = [];
-        if (nodes){
-            for (let node of nodes){
+        this.comparator = comparator;
+        if (nodes) {
+            for (let node of nodes) {
                 this.insert(node);
             }
         }
@@ -32,7 +34,7 @@ export class PriorityQueue {
         let currentIndex = index;
         let parentIndex = this.parentIndex(currentIndex);
 
-        while (currentIndex > 0 && this.heap[currentIndex].key < this.heap[parentIndex].key) {
+        while (currentIndex > 0 && this.comparator(this.heap[currentIndex], this.heap[parentIndex]) < 0) {
             this.swap(currentIndex, parentIndex);
             currentIndex = parentIndex;
             parentIndex = this.parentIndex(currentIndex);
@@ -47,11 +49,11 @@ export class PriorityQueue {
         while (leftChildIndex < this.heap.length) {
             let smallerChildIndex = leftChildIndex;
 
-            if (rightChildIndex < this.heap.length && this.heap[rightChildIndex].key < this.heap[leftChildIndex].key) {
+            if (rightChildIndex < this.heap.length && this.comparator(this.heap[rightChildIndex], this.heap[leftChildIndex]) < 0) {
                 smallerChildIndex = rightChildIndex;
             }
 
-            if (this.heap[currentIndex].key <= this.heap[smallerChildIndex].key) {
+            if (this.comparator(this.heap[currentIndex], this.heap[smallerChildIndex]) <= 0) {
                 break;
             }
 
@@ -66,13 +68,8 @@ export class PriorityQueue {
         return this.heap.length === 0;
     }
 
-    public hasElement(node: Node) {
-        for (let u of this.heap){
-            if (node.index === u.index){
-                return true;
-            }
-        }
-        return false;
+    public hasElement(node: Node): boolean {
+        return this.heap.some(u => node.index === u.index);
     }
 
     public insert(node: Node): void {
@@ -95,14 +92,28 @@ export class PriorityQueue {
         return minNode;
     }
 
-    public updatePriority(node: Node, newKey: number): void {
+    public updatePriorityByKey(node: Node, newKey: number): void {
         const index = this.heap.indexOf(node);
         if (index === -1) return;
 
         const oldKey = node.key;
         node.key = newKey;
 
-        if (newKey < oldKey) {
+        if (this.comparator({ ...node, key: newKey }, { ...node, key: oldKey }) < 0) {
+            this.heapifyUp(index);
+        } else {
+            this.heapifyDown(index);
+        }
+    }
+
+    public updatePriorityByD(node: Node, newD: number): void {
+        const index = this.heap.indexOf(node);
+        if (index === -1) return;
+
+        const oldD = node.d;
+        node.d = newD;
+
+        if (this.comparator({ ...node, d: newD }, { ...node, d: oldD }) < 0) {
             this.heapifyUp(index);
         } else {
             this.heapifyDown(index);
