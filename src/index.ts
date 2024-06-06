@@ -2,10 +2,13 @@ import * as d3 from 'd3';
 import { Graph, Color } from './Data Structures/graph';
 import { renderGraph } from './renderer';
 
+// Constants
+const WIDTH = 1000;
+const HEIGHT = Math.min(500, WIDTH * 0.6);
+
 // Create a new graph instance
 const graph = new Graph();
 
-// Populate the graph with dummy data
 const dummyNodes = [
     { index: 0, x: 450, y: 365, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f:0, key: Number.MAX_VALUE, isHighlighted: false},
     { index: 1, x: 455, y: 86, color: Color.WHITE, d: Number.MAX_VALUE, pred: -1, f: 0, key: Number.MAX_VALUE, isHighlighted: false },
@@ -31,10 +34,7 @@ graph.edges = dummyEdges;
 graph.isDirected = true;
 graph.isWeighted = true;
 
-const width = 1000;
-const height = Math.min(500, width * 0.6);
-
-const svg = d3.create("svg").attr("viewBox", [0, 0, width, height]);
+const svg = d3.create("svg").attr("viewBox", [0, 0, WIDTH, HEIGHT]);
 
 // Render the graph
 renderGraph(graph, svg);
