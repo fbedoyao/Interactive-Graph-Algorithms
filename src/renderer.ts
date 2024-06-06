@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './Data Structures/graph';
-import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState } from './utils';
+import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState, getContainerBounds,  getFixedPointOnCircle, getOutwardControlPoint, getMidPointOnQuadraticBezier, getQuadraticControlPoint, getOutwardOffset} from './utils';
 import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim, bellmanFord, dijkstra } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
@@ -51,16 +51,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         if (draggingEnabled) {
             console.log("Nodes after dragging:", graph.nodes);
         }
-    }
-
-    // Utility Functions
-    function getContainerBounds() {
-        return {
-            minX: 20,
-            minY: 20,
-            maxX: 980,
-            maxY: 483
-        };
     }
 
     function updateArrowheadColor() {
@@ -195,7 +185,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     function deleteAllNodesAndEdges() {
         graph.nodes = [];
         graph.edges = [];
-        //svg.selectAll("*").remove();
         redrawGraph();
     }
 
@@ -380,39 +369,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         document.getElementById("change-graph-is-weighted").addEventListener("click", () => changeGraphIsWeighted());
     }
 
-    // Function to calculate midpoint of a quadratic Bézier curve
-    function getMidPointOnQuadraticBezier(startPoint, controlPoint, endPoint) {
-        const t = 0.5;
-        const x = Math.pow(1 - t, 2) * startPoint.x + 2 * (1 - t) * t * controlPoint.x + Math.pow(t, 2) * endPoint.x;
-        const y = Math.pow(1 - t, 2) * startPoint.y + 2 * (1 - t) * t * controlPoint.y + Math.pow(t, 2) * endPoint.y;
-        return { x, y };
-    }
-
-    // Function to calculate control point for quadratic Bézier curve
-    function getQuadraticControlPoint(sourceNode, targetNode) {
-        const dx = targetNode.x - sourceNode.x;
-        const dy = targetNode.y - sourceNode.y;
-        const curvature = 0.2;
-        const offsetX = dy * curvature;
-        const offsetY = -dx * curvature;
-        return {
-            x: (sourceNode.x + targetNode.x) / 2 + offsetX,
-            y: (sourceNode.y + targetNode.y) / 2 + offsetY
-        };
-    }
-
-    // Calculate outward offset for edge labels
-    function getOutwardOffset(sourceNode, targetNode, controlPoint, offset) {
-        const midPoint = getMidPointOnQuadraticBezier(sourceNode, controlPoint, targetNode);
-        const dx = midPoint.x - controlPoint.x;
-        const dy = midPoint.y - controlPoint.y;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        return {
-            x: (dx / length) * offset,
-            y: (dy / length) * offset
-        };
-    }
-
     function changeGraphIsWeighted(){
         console.log("Called changeGraphIsWeighted");
         const changeGraphIsWeightedButton = document.getElementById("change-graph-is-weighted");
@@ -586,11 +542,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
             default:
                 return;
         }
-
-        // Perform algorithm on current graph state
-        // algorithmFunction(graph, svg);
-
-        // Redraw the graph to reflect algorithm changes
         redrawGraph();
     }
 
@@ -615,25 +566,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         });
     }
 
-    // Self - loops
-    function getFixedPointOnCircle(cx, cy, radius, angle) {
-        return {
-            x: cx + radius * Math.cos(angle),
-            y: cy + radius * Math.sin(angle)
-        };
-    }
-
-    function getOutwardControlPoint(cx, cy, px, py, distance) {
-        const dx = px - cx;
-        const dy = py - cy;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const scale = (length + distance) / length;
-        return {
-            x: cx + dx * scale,
-            y: cy + dy * scale
-        };
-    }
-
     // Function to calculate path with curvature
     function curvedPath(d) {
         const source = graph.getNodeByIndex(d.source);
@@ -641,12 +573,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         const dx = target.x - source.x;
         const dy = target.y - source.y;
         const dr = Math.sqrt(dx * dx + dy * dy);
-        /*
-        const curvature = 0.2; // Adjust curvature here
-        const offsetX = dy * curvature;
-        const offsetY = -dx * curvature;
-        return `M${source.x},${source.y} Q${(source.x + target.x) / 2 + offsetX},${(source.y + target.y) / 2 + offsetY} ${target.x},${target.y}`;
-        */
         const offset = 15; // Adjust this value to shorten the path
         const shortenFactor = offset / dr;
         const sx = source.x + dx * shortenFactor;
