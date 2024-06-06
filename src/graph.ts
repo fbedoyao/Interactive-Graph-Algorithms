@@ -1,5 +1,3 @@
-import { some } from "d3";
-
 export enum Color {
   WHITE = "white",
   GRAY = "#ccc",
