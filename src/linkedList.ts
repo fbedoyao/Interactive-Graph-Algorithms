@@ -9,7 +9,6 @@ class LinkedListNode {
 
 export class LinkedList {
     private head: LinkedListNode | null = null;
-    private tail: LinkedListNode | null = null;
     private size: number = 0;
 
     // Add a node to the front of the list
@@ -18,7 +17,6 @@ export class LinkedList {
 
         if (this.head === null) {
             this.head = newNode;
-            this.tail = newNode;
         } else {
             newNode.next = this.head;
             this.head = newNode;
