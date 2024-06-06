@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { Graph, Node, Edge, Color } from './graph';
+import { Graph, Node, Edge, Color } from './Data Structures/graph';
 import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState } from './utils';
 import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim, bellmanFord, dijkstra } from './algorithm'
 

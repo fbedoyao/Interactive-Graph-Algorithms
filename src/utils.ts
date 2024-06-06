@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { Graph, Node, Edge, Color } from './graph';
+import { Graph, Node, Edge, Color } from './Data Structures/graph';
 
 
 export function addEventListenerToSelection<T extends d3.BaseType, D>(

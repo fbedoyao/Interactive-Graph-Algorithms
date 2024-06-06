@@ -1,4 +1,4 @@
-import { Node } from 'graph'
+import { Node } from './graph'
 
 class SetOfNodeIndexes {
     private _set: Set<number>;

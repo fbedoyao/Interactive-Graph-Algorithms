@@ -1,4 +1,4 @@
-import { Node } from "graph";
+import { Node } from "./graph";
 
 export class PriorityQueue {
     private heap: Node[];

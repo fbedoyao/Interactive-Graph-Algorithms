@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { Graph, Color } from './graph';
+import { Graph, Color } from './Data Structures/graph';
 import { renderGraph } from './renderer';
 
 // Create a new graph instance
