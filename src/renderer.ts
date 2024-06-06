@@ -24,6 +24,15 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     const cancelButton = document.getElementById("cancelButton") as HTMLButtonElement;
     const newWeightInput = document.getElementById("newWeightInput") as HTMLInputElement;
     const outputBox = document.getElementById("output-box") as HTMLDivElement;
+    const addNodeButton = document.getElementById("add-node") as HTMLButtonElement;
+    const addEdgeButton = document.getElementById("add-edge") as HTMLButtonElement;
+    const dragNodeButton = document.getElementById("drag-tool") as HTMLButtonElement;
+    const deleteNodeButton = document.getElementById("delete-node") as HTMLButtonElement;
+    const deleteEdgeButton = document.getElementById("delete-edge") as HTMLButtonElement;
+    const deleteGraphButton = document.getElementById("delete-graph") as HTMLButtonElement;
+    const changeIsDirectedButton = document.getElementById("change-graph-is-directed") as HTMLButtonElement;
+    const changeIsWeightedButton = document.getElementById("change-graph-is-weighted") as HTMLButtonElement;
+
 
     // Functions to handle drag events
     function dragstarted(event, d) {
@@ -355,39 +364,37 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
     }
 
     function setupEventListeners() {
-        document.getElementById("add-node").addEventListener("click", () => toggleAddNodeMode());
-        document.getElementById("add-edge").addEventListener("click", () => toggleAddEdgeMode());
-        document.getElementById("drag-tool").addEventListener("click", () => toggleDragMode());
-        document.getElementById("delete-node").addEventListener("click", () => toggleDeleteNodeMode());
-        document.getElementById("delete-edge").addEventListener("click", () => toggleDeleteEdgeMode());
-        document.getElementById("delete-graph").addEventListener("click", () => deleteAllNodesAndEdges());
-        document.getElementById("change-graph-type").addEventListener("click", () => changeGraphType());
-        document.getElementById("run-algorithm").addEventListener("click", () => runAlgorithm());
+        addNodeButton.addEventListener("click", () => toggleAddNodeMode());
+        addEdgeButton.addEventListener("click", () => toggleAddEdgeMode());
+        dragNodeButton.addEventListener("click", () => toggleDragMode());
+        deleteNodeButton.addEventListener("click", () => toggleDeleteNodeMode());
+        deleteEdgeButton.addEventListener("click", () => toggleDeleteEdgeMode());
+        deleteGraphButton.addEventListener("click", () => deleteAllNodesAndEdges());
+        changeIsDirectedButton.addEventListener("click", () => changeIsDirected());
+        runButton.addEventListener("click", () => runAlgorithm());
         algorithmSelect.addEventListener("change", () => handleAlgorithmChange());
         sourceNodeSelect.addEventListener("change", () => handleSourceNodeSelectChange());
         updateWeightButton.addEventListener("click", () => handleClickUpdateWeightButton());
-        document.getElementById("change-graph-is-weighted").addEventListener("click", () => changeGraphIsWeighted());
+        changeIsWeightedButton.addEventListener("click", () => changeIsWeighted());
     }
 
-    function changeGraphIsWeighted(){
-        console.log("Called changeGraphIsWeighted");
-        const changeGraphIsWeightedButton = document.getElementById("change-graph-is-weighted");
+    function changeIsWeighted(){
+        console.log("Called changeIsWeighted");
         if (graph.isWeighted){
             console.log("Change from weighted to unweighted");
 
             graph.isWeighted = false;
-            changeGraphIsWeightedButton.textContent = "Make Weighted"
+            changeIsWeightedButton.textContent = "Make Weighted"
         } else {
             console.log("Change from unweighted to weighted");
             graph.isWeighted = true;
-            changeGraphIsWeightedButton.textContent = "Make Unweighted"
+            changeIsWeightedButton.textContent = "Make Unweighted"
         }
         redrawGraph();
     }
 
-    function changeGraphType() {
-        console.log("Called changeGraphType");
-        const changeGraphTypeButton = document.getElementById("change-graph-type");
+    function changeIsDirected() {
+        console.log("Called changeIsDirected");
         if (graph.isDirected){
             console.log("Change from directed to undirected");
             graph.edges.forEach(e => {
@@ -403,11 +410,11 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
                 }
             });
             graph.isDirected = false;
-            changeGraphTypeButton.textContent = "Make Directed";
+            changeIsDirectedButton.textContent = "Make Directed";
         } else {
             console.log("Change from undirected to directed");
             graph.isDirected = true;
-            changeGraphTypeButton.textContent = "Make Undirected";
+            changeIsDirectedButton.textContent = "Make Undirected";
         }
         redrawGraph();
     }
