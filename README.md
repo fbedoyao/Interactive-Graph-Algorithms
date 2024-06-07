@@ -31,6 +31,6 @@ To set up the project locally, follow these steps:
 1. **Build the project:**
    ```bash
    npm run build
-1. **Start the development server:**
+1. **Start the application:**
    ```bash
    npm start
