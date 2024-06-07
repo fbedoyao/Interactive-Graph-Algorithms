@@ -1,8 +1,8 @@
-import { Graph, Node, Edge, Color } from './graph';
-import { Queue } from './queue'
-import { LinkedList } from './linkedList';
-import { MstForest } from './mstForest';
-import { PriorityQueue } from './priotityQueue';
+import { Graph, Node, Edge, Color } from './Data Structures/graph';
+import { Queue } from './Data Structures/queue'
+import { LinkedList } from './Data Structures/linkedList';
+import { MstForest } from './Data Structures/mstForest';
+import { PriorityQueue } from './Data Structures/priotityQueue';
 
 export function printGraph(graph: Graph){
     const adjList = graph.getAdjacencyList();
