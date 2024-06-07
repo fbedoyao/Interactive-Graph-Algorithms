@@ -6,7 +6,7 @@ This project is an interactive graph visualization tool built with TypeScript an
 ## Features
 - Modify graph structures in real-time (drag nodes, delete edges, update weights, and more)
 - Display self-looping edges and curved edges for bidirectional links in directed graphs
-- Visualize the execution of the most important graph algorithms.
+- Visualize the execution of the most important graph algorithms
 
 ## Supported Algorithms
 - Breadth-First Search
@@ -23,5 +23,14 @@ To set up the project locally, follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/graph-visualization.git
-   cd graph-visualization
+   git clone https://github.com/fbedoyao/Interactive-Graph-Algorithms.git
+   cd Interactive-Graph-Algorithms
+1. **Install dependencies:**
+   ```bash
+   npm install
+1. **Build the project:**
+   ```bash
+   npm run build
+1. **Start the development server:**
+   ```bash
+   npm start
