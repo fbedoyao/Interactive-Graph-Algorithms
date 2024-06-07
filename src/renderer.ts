@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { Graph, Node, Edge, Color } from './Data Structures/graph';
-import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState, getContainerBounds,  getFixedPointOnCircle, getOutwardControlPoint, getMidPointOnQuadraticBezier, getQuadraticControlPoint, getOutwardOffset} from './utils';
+import { deactivateAllButtonsExcept, enableAllButtons, addEventListenerToSelection, resetNodesState, resetEdgeState, getContainerBounds, getEdgePathDefinition, getEdgeLabelXCoordinate, getEdgeLabelYCoordinate} from './utils';
 import { breadthFirstSearchAsync, depthFirstSearch, printGraph, topologicalSort, stronglyConnectedComponents, kruskal, prim, bellmanFord, dijkstra } from './algorithm'
 
 export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
@@ -82,113 +82,20 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         }
     }
     
-
     function updateEdgePositions(edgesSVGElement) {
         if (graph.edges.length > 0) {
             edgesSVGElement
-            .attr("stroke", d => d.isHighlighted ? "blue" : "black")
-            .attr("stroke-width", d => d.isHighlighted ? 4 : 2)
-            .attr("d", function(d) {
-                const sourceNode = graph.nodes.find(node => node.index === d.source);
-                const targetNode = graph.nodes.find(node => node.index === d.target);
-                
-                if (sourceNode && targetNode) {
-                    if (sourceNode.index === targetNode.index) {
-                        // Self-looping path
-                        const startPointAngle = 5 * Math.PI / 4;
-                        const endPointAngle = 7 * Math.PI / 4;
-                        const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
-                        const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
-                        const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
-                        return `M ${startPoint.x},${startPoint.y} Q ${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
-                    } else {
-                        
-                        if(graph.edgeExists(d.target, d.source)){
-                            return curvedPath(d);
-                        } else {
-                            // Regular path (shortened line)
-                            const dx = targetNode.x - sourceNode.x;
-                            const dy = targetNode.y - sourceNode.y;
-                            const length = Math.sqrt(dx * dx + dy * dy);
-                            const shortenLength = 15; // Adjust to shorten or lengthen the lines
-                            const newX = sourceNode.x + (dx / length) * (length - shortenLength);
-                            const newY = sourceNode.y + (dy / length) * (length - shortenLength);
-                            return `M ${sourceNode.x},${sourceNode.y} L ${newX},${newY}`;
-                        }
-                    }
-                } else {
-                    // Handle case where sourceNode or targetNode is undefined
-                    return null; // or handle appropriately based on your application logic
-                }
-            })
-            .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); 
+                .attr("stroke", d => d.isHighlighted ? "blue" : "black")
+                .attr("stroke-width", d => d.isHighlighted ? 4 : 2)
+                .attr("d", d => getEdgePathDefinition(d, graph))
+                .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); 
         }
     }
 
-    // Update edge label positions
     function updateEdgeLabelsPositions(edgeLabelsSVGElement) {
-        edgeLabelsSVGElement.attr("x", function(d) {
-                const sourceNode = graph.nodes.find(node => node.index === d.source);
-                const targetNode = graph.nodes.find(node => node.index === d.target);
-                if (sourceNode && targetNode) {
-                    if (sourceNode.index === targetNode.index) {
-                        // Self-looping path
-                        const startPointAngle = 5 * Math.PI / 4;
-                        const endPointAngle = 7 * Math.PI / 4;
-                        const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
-                        const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
-                        const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
-                        const midPoint = getMidPointOnQuadraticBezier(startPoint, controlPoint, endPoint);
-                        return midPoint.x;
-                    } else {
-                        if(graph.edgeExists(d.target, d.source)){
-                            // Two edges connecting two nodes
-                            const controlPoint = getQuadraticControlPoint(sourceNode, targetNode);
-                            const midPoint = getMidPointOnQuadraticBezier({x: sourceNode.x, y: sourceNode.y}, controlPoint, {x: targetNode.x, y: targetNode.y});
-                            const outwardOffset = getOutwardOffset(sourceNode, targetNode, controlPoint, -15);
-                            return midPoint.x + outwardOffset.x;
-                        } else {
-                            // Straight line
-                            const dx = targetNode.x - sourceNode.x;
-                            const dy = targetNode.y - sourceNode.y;
-                            const midX = (sourceNode.x + targetNode.x) / 2;
-                            const midY = (sourceNode.y + targetNode.y) / 2;
-                            return midX - (dy / Math.sqrt(dx * dx + dy * dy)) * 20;
-                        }
-                    }
-                }
-            })
-            .attr("y", function(d) {
-                const sourceNode = graph.nodes.find(node => node.index === d.source);
-                const targetNode = graph.nodes.find(node => node.index === d.target);
-                if (sourceNode && targetNode) {
-                    if (sourceNode.index === targetNode.index) {
-                        // Self-looping path
-                        const startPointAngle = 5 * Math.PI / 4;
-                        const endPointAngle = 7 * Math.PI / 4;
-                        const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
-                        const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
-                        const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
-                        const midPoint = getMidPointOnQuadraticBezier(startPoint, controlPoint, endPoint);
-                        return midPoint.y -10;
-                    } else {
-                        if(graph.edgeExists(d.target, d.source)){
-                            // Two edges connecting two nodes
-                            const controlPoint = getQuadraticControlPoint(sourceNode, targetNode);
-                            const midPoint = getMidPointOnQuadraticBezier({x: sourceNode.x, y: sourceNode.y}, controlPoint, {x: targetNode.x, y: targetNode.y});
-                            const outwardOffset = getOutwardOffset(sourceNode, targetNode, controlPoint, -15);
-                            return midPoint.y + outwardOffset.y;
-                        } else {
-                            // Straight line
-                            const dx = targetNode.x - sourceNode.x;
-                            const dy = targetNode.y - sourceNode.y;
-                            const midX = (sourceNode.x + targetNode.x) / 2;
-                            const midY = (sourceNode.y + targetNode.y) / 2;
-                            return midY + (dx / Math.sqrt(dx * dx + dy * dy)) * 20;
-                        }
-                    }
-                }
-            });
+        edgeLabelsSVGElement
+            .attr("x", d => getEdgeLabelXCoordinate(d, graph))
+            .attr("y", d => getEdgeLabelYCoordinate(d, graph))
     }
     
     function deleteAllNodesAndEdges() {
@@ -573,24 +480,6 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         });
     }
 
-    // Function to calculate path with curvature
-    function curvedPath(d) {
-        const source = graph.getNodeByIndex(d.source);
-        const target = graph.getNodeByIndex(d.target);
-        const dx = target.x - source.x;
-        const dy = target.y - source.y;
-        const dr = Math.sqrt(dx * dx + dy * dy);
-        const offset = 15; // Adjust this value to shorten the path
-        const shortenFactor = offset / dr;
-        const sx = source.x + dx * shortenFactor;
-        const sy = source.y + dy * shortenFactor;
-        const tx = target.x - dx * shortenFactor;
-        const ty = target.y - dy * shortenFactor;
-        const curvature = 0.2; // Adjust curvature here
-        const offsetX = dy * curvature;
-        const offsetY = -dx * curvature;
-        return `M${sx},${sy} Q${(sx + tx) / 2 + offsetX},${(sy + ty) / 2 + offsetY} ${tx},${ty}`;
-    }
 
     // Main execution starts here
 
@@ -623,23 +512,7 @@ export function renderGraph(graph: Graph, svg: d3.Selection<SVGSVGElement, unkno
         .classed("edge", true)
         .attr("stroke", d => d.isHighlighted ? "blue" : "black")
         .attr("stroke-width", d => d.isHighlighted ? 4 : 2)
-        .attr("d", function(d) {
-            const sourceNode = graph.nodes.find(node => node.index === d.source);
-            const targetNode = graph.nodes.find(node => node.index === d.target);
-            if (sourceNode.index === targetNode.index) {
-                const startPointAngle = 5 * Math.PI / 4; // ? degrees
-                const endPointAngle = 7 * Math.PI / 4; // 315 degrees
-                const startPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, startPointAngle);
-                const endPoint = getFixedPointOnCircle(sourceNode.x, sourceNode.y, 15, endPointAngle);
-                const controlPoint = getOutwardControlPoint(sourceNode.x, sourceNode.y, (startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, 30);
-                return `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`;
-            } else {
-                if(graph.edgeExists(d.target, d.source)){
-                    return curvedPath(d);
-                }
-                return `M ${sourceNode.x},${sourceNode.y} L ${targetNode.x*0.8},${targetNode.y*0.8}`;
-            }
-        })
+        .attr("d", d => getEdgePathDefinition(d, graph))
         .attr("marker-end", d => graph.isDirected ? "url(#arrowhead)" : null); // Initial setup includes arrowhead for directed graphs
 
     // Define edge labels
